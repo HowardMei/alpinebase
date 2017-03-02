@@ -3,4 +3,4 @@
 hubid=hwdm
 tag=$(grep -o "edge@.*" $(pwd)/Dockerfile | tr -d edge@ | tr -d .)
 sudo docker build --force-rm --tag "${hubid}/apbase:e${tag}" .
-sudo docker build --force-rm --tag "${hubid}/apbase:latest" .
+sudo docker tag "${hubid}/apbase:e${tag}" "${hubid}/apbase:latest"

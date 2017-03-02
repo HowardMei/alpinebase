@@ -25,7 +25,8 @@ RUN 			mkdir -p /usr/sbin && mkdir -p /usr/local/sbin && \
 				chmod 0755 /entrypoint && chmod 0644 /etc/apk/repositories && \
 				chmod 0755 /usr/bin/apk-install /usr/bin/apk-remove \
 				/usr/bin/apk-cleanup /usr/bin/set-timezone && \
-	            apk add --update --no-cache sed tar unzip wget su-exec && \
+				apk upgrade --update --no-cache && \
+	            apk add --update --no-cache sed tar unzip libcap su-exec && \
 	            set-timezone ${TZ} && apk-cleanup && \
 	            ln -s $(which su-exec) /usr/sbin/sux && \
 	            mkdir -p /var/www && chmod -R 0755 /var/www && \
