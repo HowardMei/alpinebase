@@ -1,14 +1,14 @@
 FROM            hwdm/apbase:e350
 MAINTAINER      Howard Mei      <howardleomei@gmail.com>
 
-ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=1 \
-    LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8 \
-    TERM=xterm
+ENV 			S6_BEHAVIOUR_IF_STAGE2_FAILS=1 \
+				LANG=en_US.UTF-8 \
+				LC_ALL=en_US.UTF-8 \
+				LANGUAGE=en_US.UTF-8 \
+				TERM=xterm
 
-ENV S6SCRIPTS_VERSION=v1.19.1.1e1
-ENV GODNSMASQ_VERSION=1.0.7
+ENV 			S6SCRIPTS_VERSION=v1.19.1.1e1
+ENV 			GODNSMASQ_VERSION=1.0.7
 
 # Set Default User and Home Dir
 USER            root
@@ -28,3 +28,5 @@ VOLUME 			["/var/log/services"]
 
 # Define the Entry Point and/or Default Command
 ENTRYPOINT      ["/init"]
+
+EXPOSE 53 53/udp
