@@ -17,10 +17,10 @@ ADD				usr		/usr
 RUN 			addgroup consul && adduser -D -g "" -s /bin/sh -G consul consul && apk-install curl && \
 				curl -sSLo /tmp/consul.zip https://releases.hashicorp.com/consul/{$CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip && \
 				unzip -d /bin /tmp/consul.zip && rm -f /tmp/consul.zip && apk-remove curl && chmod a+x /usr/bin/consul* && \
-				mkdir -p /data/consul && chown -R consul:consul /data/consul
+				mkdir -p /var/data/consul && chown -R consul:consul /var/data/consul
 
 # Expose the consul data directory as a volume since there's mutable state in there.
-VOLUME 			["/data/consul"]
+VOLUME 			["/var/data/consul"]
 
 # Server RPC is used for communication between Consul clients and servers for internal
 # request forwarding.

@@ -1,7 +1,7 @@
 #!/usr/bin/with-contenv sh
 
 # check if `consul-template` templates exist
-if [ `consul-template-count` -gt 0 ]; then
+if [ $(consul-template-count) -gt 0 ]; then
   # add symlink for consul watch
   if [ ! -e "/etc/consul/conf.d/watch-node.json" ]; then
     # create a symlink so we can start consul-template once Consul has inited

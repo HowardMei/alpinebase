@@ -18,6 +18,7 @@ RUN 			apk add --no-cache --virtual=.build-dependencies wget ca-certificates && 
 				echo "export LANG=${LANG}" > /etc/profile.d/locale.sh && \
 				/usr/glibc-compat/sbin/ldconfig /lib /usr/glibc-compat/lib && \
 				echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf && \
-				rm -f /root/.wget-hsts && apk-remove .build-dependencies wget ca-certificates glibc-i18n 
+				rm -f /root/.wget-hsts && apk-remove .build-dependencies wget ca-certificates glibc-i18n && \
+				apk-cleanup
 
 

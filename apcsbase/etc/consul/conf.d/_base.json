@@ -1,4 +1,4 @@
 {
-    "data_dir": "/data/consul",
+    "data_dir": "/var/data/consul",
     "disable_update_check": true
 }

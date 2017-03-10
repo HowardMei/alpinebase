@@ -3,6 +3,7 @@
 This layer 4 docker image is built upon [hwdm/aps6consul image](https://hub.docker.com/r/hwdm/aps6consul/) `latest` tag
 
 ## Description
+This is the real base for many multi-proc docker images.  
 
 ## Additions
 Packages: `consul-template`

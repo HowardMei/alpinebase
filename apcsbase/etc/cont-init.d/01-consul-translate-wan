@@ -5,6 +5,6 @@ if [ "$CONSUL_TRANSLATE_WAN" == "true" ]; then
   echo '{"translate_wan_addrs": true}' > /etc/consul/conf.d/_wan-translate.json
 else
   if [ -e "/etc/consul/conf.d/_wan-translate.json" ]; then
-    rm /etc/consul/conf.d/_wan-translate.json
+    \rm -f /etc/consul/conf.d/_wan-translate.json
   fi
 fi

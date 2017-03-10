@@ -29,4 +29,4 @@ VOLUME 			["/var/log/services"]
 # Define the Entry Point and/or Default Command
 ENTRYPOINT      ["/init"]
 
-EXPOSE 53 53/udp
+EXPOSE 			53 53/udp
