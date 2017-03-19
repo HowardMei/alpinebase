@@ -29,7 +29,7 @@ RUN 			mkdir -p /usr/sbin && mkdir -p /usr/local/sbin && \
 	            set-timezone ${TZ} && apk-cleanup && \
 	            ln -s $(which su-exec) /usr/sbin/sux && \
 	            mkdir -p /var/www && chmod -R 0755 /var/www && \
-	            addgroup -S www-data && adduser -S -s /bin/sh -g 'WWW Group' \
+	            addgroup -g 82 -S www-data && adduser -u 82 -S -s /bin/sh -g 'WWW Group' \
 	            -G www-data -D www-data && chown -R www-data:www-data /var/www
 				
 # Set Default Working Dir
