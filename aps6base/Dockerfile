@@ -1,7 +1,7 @@
 FROM            hwdm/apbase:e350
 MAINTAINER      Howard Mei      <howardleomei@gmail.com>
 
-ENV 			S6_BEHAVIOUR_IF_STAGE2_FAILS=1 \
+ENV 			S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
 				LANG=en_US.UTF-8 \
 				LC_ALL=en_US.UTF-8 \
 				LANGUAGE=en_US.UTF-8 \
@@ -17,7 +17,7 @@ COPY			etc				/etc
 ADD             https://github.com/janeczku/go-dnsmasq/releases/download/${GODNSMASQ_VERSION}/go-dnsmasq-min_linux-amd64        /bin/go-dnsmasq
 ADD             https://github.com/HowardMei/s6overlayscripts/archive/${S6SCRIPTS_VERSION}.tar.gz   /tmp/${S6SCRIPTS_VERSION}.tar.gz
 
-RUN 			apk-install bind-tools execline s6 s6-portable-utils && chmod a+x /bin/go-dnsmasq && \
+RUN 			apk-install ca-certificates bind-tools curl execline s6 s6-portable-utils && chmod a+x /bin/go-dnsmasq && \
 				tar zxvf /tmp/${S6SCRIPTS_VERSION}.tar.gz --strip-components=1 -C / && rm -f /tmp/${S6SCRIPTS_VERSION}.tar.gz && \
 				chmod 0755 /init /prep && ln -sf /bin/execlineb /usr/bin/execlineb && /prep && rm -f /prep && \
 				apk-cleanup && addgroup go-dnsmasq && adduser -D -g "GO-DNSMASQ Daemon" -s /bin/sh -G go-dnsmasq go-dnsmasq && \
