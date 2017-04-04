@@ -1,0 +1,24 @@
+#!/bin/sh
+set -e
+
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+exec 2>&1
+
+LAST=0
+test -x /etc/runit/reboot && LAST=6
+
+echo 'Forcing all services in /etc/service to stop ... ...'
+sv -w196 force-stop /etc/service/*
+sv exit /etc/service/*
+
+echo "Running post-service clearing scripts in /etc/postclr.d"
+for _script in /etc/postclr.d/*; do
+    if [ -x ${_script} ]; then
+        echo >&2 "*** Running: ${_script}"
+        ${_script}
+    fi
+done
+
+echo 'Shutting down the container ... ...'
+test -x /etc/init.d/rc && /etc/init.d/rc ${LAST}

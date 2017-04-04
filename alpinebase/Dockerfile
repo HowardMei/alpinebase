@@ -1,10 +1,7 @@
-FROM            alpine:edge
+FROM            alpine:3.5
 MAINTAINER      Howard Mei      <howardleomei@gmail.com>
 ENV             LOCALE          en_US.UTF-8
 ENV				TZ				UTC
-# Run docker run -it --rm alpine:edge cat /etc/os-release
-LABEL           OSVER           edge@3.5.0
-
 
 # Set Default User and Home Dir
 USER            root
@@ -27,7 +24,7 @@ RUN 			mkdir -p /usr/sbin && mkdir -p /usr/local/sbin && \
 				/usr/bin/apk-cleanup /usr/bin/set-timezone && \
 	            apk add --update --no-cache sed tar unzip libcap su-exec && \
 	            set-timezone ${TZ} && apk-cleanup && \
-	            ln -s $(which su-exec) /usr/sbin/sux && \
+	            ln -s /sbin/su-exec /usr/sbin/sux && \
 	            mkdir -p /var/www && chmod -R 0755 /var/www && \
 	            addgroup -g 82 -S www-data && adduser -u 82 -S -s /bin/sh -g 'WWW Group' \
 	            -G www-data -D www-data && chown -R www-data:www-data /var/www

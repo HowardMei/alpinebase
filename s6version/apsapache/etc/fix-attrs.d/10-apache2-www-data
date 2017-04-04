@@ -1,0 +1,4 @@
+/etc/apache2 true www-data 0600 0700
+/var/run/apache2 true www-data 0600 0700
+/var/log/apache2/access-logs false nobody,32768:32768 0755 2700
+/var/log/apache2/error-logs false nobody,32768:32768 0755 2700

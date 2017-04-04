@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+hubid=hwdm
+tag=$(grep -o "V=.*" $(pwd)/Dockerfile | tr -d V= | tr -d . | tr -d -)
+sudo docker build --force-rm --tag "${hubid}/apsapache:${tag}" .
+sudo docker tag "${hubid}/apsapache:${tag}" "${hubid}/apsapache:latest"

@@ -1,6 +1,10 @@
 # docker image: alpinebase [Layer 1]
 
-This layer 1 docker image is built upon [alpine image](https://hub.docker.com/r/_/alpine/) `edge` tag,which itself is built from [Alpine Linux](https://alpinelinux.org/) [`Edge`](http://wiki.alpinelinux.org/wiki/Edge) branch for best support of DNS search paths and new packages, such as php7@edge/testing repository.If the intent of this image is to be a minimal base for single-service containers, tracking `edge` is not expected to cause issues (packages are still stable releases, only Alpine itself is a development build).For multi-process containers, it may generate some unexpected results, but the benefit over risk ratio seems high enough for non-critical applications (database applications using this image are required to do more testing before production).
+This layer 1 docker image is built upon [alpine image](https://hub.docker.com/r/_/alpine/) `3.5` tag with edge enhancement,
+which itself is built from [Alpine Linux](https://alpinelinux.org/) [`v3.5`](http://dl-cdn.alpinelinux.org/alpine/v3.5/) 
+branch for best support of DNS search paths and new packages, such as php7@edge/testing repository.
+If the intent is to be a minimal base for single-service containers, using `@testing` is not expected to cause issues.
+For multi-process containers, it may generate some unexpected results. Please do more testing before production.
 
 ## Description
 
@@ -9,7 +13,7 @@ Install [su-exec](https://github.com/ncopa/su-exec) instead of [gosu](https://gi
 
 
 ## Additions
-Packages: `sed tar unzip libcap su-exec`
+Packages: `sed tar unzip libcap su-exec dumb-init`
 
 Files and Folders: 
 ```
@@ -55,9 +59,10 @@ In default config `/etc/default/docker` or systemd service unit `/etc/systemd/sy
 ## Tags
 
 * `latest` tracks the `edge` tag from [upstream](https://hub.docker.com/r/_/alpine/)
-* `e350` indicates the os version of the edge, i.e, `e350=edge@3.5.0`
+* `35e` indicates the os version of the edge, i.e, `35e=3.5+edge`
 
-_This includes the `main`, `testing`, and `community` repositories, but testing packages are masked. To install them, please use `apk-install pkgname@testing`._
+_This includes the edge `@community` and `@edge`, `@testing` repositories where @ means masked. 
+To install them, please use `apk-install pkg1@edge pkg2@community pkg3@testing`._
 
 # License
 [Apache 2.0](https://www.tldrlegal.com/l/apache2)

@@ -1,0 +1,2 @@
+#!/usr/bin/execlineb -P
+logutil-service -f /var/run/s6/apache2-access-log-fifo /var/log/apache2/access-logs

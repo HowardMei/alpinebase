@@ -1,0 +1,68 @@
+#!/bin/sh
+
+set -e
+_cmdargn=$#
+_cmdargs=${@}
+
+if [ -n ${SCRIPT_FAILMODE} ]; then
+	SCRIPT_FAILMODE=1
+fi
+
+shutdown() {
+  # Running post-daemon clearing tasks
+  /etc/runit/p3
+ 
+  # first shutdown any service started by runit
+  for _srv in $(ls -1 /etc/service); do
+    sv force-stop ${_srv}
+  done
+
+  # shutdown runsvdir command  
+  kill -HUP $RUNSVDIR
+  wait $RUNSVDIR
+
+  # give processes time to stop
+  sleep 0.5
+
+  # kill any other processes still running in the container
+
+  for _pid  in $(ps -eo pid | grep -v PID  | tr -d ' ' | grep -v '^1$' | head -n -6); do
+    timeout -t 5 /bin/sh -c "kill $_pid && wait $_pid || kill -9 $_pid"
+  done
+  echo "Shutting Down Container $(hostname)"
+  exit 0
+}
+
+\rm -f /etc/runit/stopall 2>/dev/null
+
+# Run pre-deamon tasks
+/etc/runit/p1
+
+
+if [ -e /etc/runit/runit ]; then
+# Start all deamons
+	/etc/runit/p2&
+fi
+
+RUNSVID=$!
+echo "Started runit supervisor, whose PID is ${RUNSVID}."
+echo "Waiting for services processes to stablize ... ..."
+sleep 5
+echo 'List all supervised services status ... ...'
+for _srv in $(ls -1 /etc/service); do
+    sv status ${_srv}
+done
+
+if [ ${_cmdargn} -gt 0 ]; then
+	sleep 3
+	echo "Executing command line: ${_cmdargs}"
+	exec ${_cmdargs}
+fi
+
+# Catch shutdown signals
+echo "All processes are running properly, waiting for termination signal (Ctrl+C) ... ..."
+trap shutdown SIGTERM SIGINT SIGHUP
+wait ${RUNSVID}
+
+shutdown
+unset _cmdargn _cmdargs _srv 

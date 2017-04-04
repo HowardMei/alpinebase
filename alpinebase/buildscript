@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
 hubid=hwdm
-tag=$(grep -o "edge@.*" $(pwd)/Dockerfile | tr -d edge@ | tr -d . | tr -d '[:space:]')
-sudo docker build --force-rm --tag "${hubid}/apbase:e${tag}" .
-sudo docker tag "${hubid}/apbase:e${tag}" "${hubid}/apbase:latest"
+tag=$(grep -o "alpine:.*" $(pwd)/Dockerfile | tr -d alpine: | tr -d . | tr -d '[:space:]')
+sudo docker build --force-rm --tag "${hubid}/apbase:${tag}e" .
+sudo docker tag "${hubid}/apbase:${tag}e" "${hubid}/apbase:latest"

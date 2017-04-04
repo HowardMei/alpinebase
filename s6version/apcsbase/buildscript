@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+hubid=hwdm
+tag=$(grep -o "CONSUL_TEMPLATE_VERSION=.*" $(pwd)/Dockerfile | tr -d CONSUL_TEMPLATE_VERSION= | tr -d . | tr -d '[:space:]')
+sudo docker build --force-rm --tag "${hubid}/apcsbase:${tag}" .
+sudo docker tag "${hubid}/apcsbase:${tag}" "${hubid}/apcsbase:latest"

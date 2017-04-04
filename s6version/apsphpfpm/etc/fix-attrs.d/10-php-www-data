@@ -1,0 +1,4 @@
+/etc/php true www-data 0600 0700
+/var/run/php true www-data 0600 0700
+/var/log/php/access-logs false nobody,32768:32768 0755 2700
+/var/log/php/error-logs false nobody,32768:32768 0755 2700

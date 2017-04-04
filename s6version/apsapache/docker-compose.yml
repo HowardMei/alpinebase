@@ -1,0 +1,10 @@
+version: '2'
+services:
+  php:
+    image: hwdm/apsapache2
+    container_name: test_apache2
+    ports:
+     - "80:80"
+    volumes:
+      - ./html:/var/www/html
+

@@ -1,0 +1,34 @@
+#!/usr/bin/with-contenv sh
+
+set -e
+
+export APACHE_RUN_USER=www-data
+export APACHE_RUN_GROUP=www-data
+export APACHE_PID_FILE=/var/run/apache2/apache2.pid
+export APACHE_RUN_DIR=/var/run/apache2
+export APACHE_LOCK_DIR=/var/lock/
+
+echo "APACHE_RUN_USER:GROUP:  ${APACHE_RUN_USER}:${APACHE_RUN_GROUP}" 
+echo "APACHE_RUN_DIR: ${APACHE_RUN_DIR}"
+echo "APACHE_PID_FILE: ${APACHE_PID_FILE}"
+echo "APACHE_LOCK_DIR: ${APACHE_LOCK_DIR}"
+
+# Apache gets grumpy about PID files pre-existing
+echo "Clearing any old processes..."
+rm -f /var/run/apache2/apache2.pid
+rm -f /run/apache2/httpd.pid
+rm -f ${APACHE_PID_FILE}
+exec 2>&1 
+
+echo "... ... Starting Service apache2 ... ..."
+# Apache gets grumpy about PID files pre-existing
+
+exec httpd -D FOREGROUND -f /etc/apache2/httpd.conf -k start
+
+##s6-setuidgid root httpd -DNO_DETACH -f /etc/apache2/httpd.conf;
+
+##s6-setuidgid www-data apachectl -DFOREGROUND;
+
+echo '... ... Service apache2 Started Successfully ... ...'
+
+## s6-service httpd status
