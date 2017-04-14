@@ -1,0 +1,17 @@
+# DocumentRoot: The directory out of which you will serve your
+# documents. By default, all requests are taken from this directory, but
+# symbolic links and aliases may be used to point to other locations.
+#
+
+# Include macros to simplify the vhost creation
+Include /etc/apache2/macros/PURE_VHOST.macro
+Include /etc/apache2/macros/_SERVSTATUS.macro
+
+<VirtualHost *:80>
+# Usage: Use PURE_VHOST $endpoint $docroot $domain $servalias
+	Use PURE_VHOST / "/var/www/localhost/htdocs" localhost localhost
+	UndefMacro PURE_VHOST
+	DirectoryIndex index.html
+	Use _SERVSTATUS "/_svstatus"
+	UndefMacro _SERVSTATUS
+</VirtualHost>

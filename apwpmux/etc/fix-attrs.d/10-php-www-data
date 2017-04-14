@@ -1,0 +1,4 @@
+/etc/php7 true www-data 0600 0700
+/var/lib/php7 true www-data 0600 0700
+/var/log/php/access-logs false www-data,32768:32768 0755 2700
+/var/log/php/error-logs false www-data,32768:32768 0755 2700

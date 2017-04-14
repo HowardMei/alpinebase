@@ -1,0 +1,33 @@
+# Define vhost macros for reuse, the <Macro> is evaluated only at start up, and <If> are evaluated for each incoming request.
+# Ref: https://httpd.apache.org/docs/2.4/upgrading.html && https://httpd.apache.org/docs/2.4/sections.html
+# Usage:
+# 	<VirtualHost 192.168.0.1:80>
+#		Use PURE_VHOST / "/var/www/localhost/htdocs" localhost localhost
+# 		...
+#		UndefMacro PURE_VHOST
+#   </VirtualHost> 
+
+<Macro PURE_VHOST $endpoint $docroot $domain $servalias>
+# Usage: Use PURE_VHOST $endpoint $docroot $domain $servalias
+# Example: Use PURE_VHOST / "/var/www/localhost/htdocs" localhost localhost
+# $endpoint is the relative path of the url, normally should be /
+    ServerName $domain
+    ServerAlias $servalias
+    DocumentRoot $docroot
+    ErrorLog "/var/log/apache2/$servalias.errorlog"
+    CustomLog "/var/log/apache2/$servalias.accesslog" combinedio env=!dontlog
+    <Directory $docroot>
+        Options FollowSymLinks
+        AllowOverride All
+        # Warning: Apache 2.4 uses a new module called mod_authz_host for access control. 
+        # Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require. 
+        # Order allow,deny
+        # Allow from all
+        Require all granted
+	</Directory>
+    <Location $endpoint>
+        # Order allow,deny
+        # Allow from all
+        Require all granted
+    </Location>
+</Macro>

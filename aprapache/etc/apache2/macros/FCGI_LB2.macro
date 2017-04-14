@@ -1,0 +1,39 @@
+# Define fcgi macros for reuse, the <Macro> is evaluated only at start up, and <If> are evaluated for each incoming request.
+# Therefore UndefMacro FCGI_PORT after Use FCGI_PORT is recommended. 
+# Ref: https://httpd.apache.org/docs/2.4/mod/mod_proxy_fcgi.html  & https://wiki.apache.org/httpd/PHP-FPM
+# Ref: https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.html 
+# Ref: http://serverfault.com/questions/573340/one-single-balancer-manager-page-for-multiple-virtual-hosts
+# Ref: https://debian-administration.org/article/725/Simplifying_repetitive_Apache_configuration_with_mod_macro
+
+<Macro FCGI_LB2 $endpoint $fcgibm1 $fcgibm2 $lbmethod>
+# Usage: Use FCGI_LB2 $endpoint $fcgibm1 $fcgibm2 $lbmethod
+# Example: Use FCGI_LB2 "/app" "localhost:9000" "localhost:9001" byrequests
+	ProxyRequests Off
+	ProxyPreserveHost On
+	ProxyStatus On
+	ProxyBadHeader ignore
+	# Never proxy the management pages
+	ProxyPass /_lbmanager !
+    ProxyPass /_servstatus !
+	Header add Set-Cookie "ROUTEID=.%BALANCER_WORKER_ROUTEe; path=/" env=BALANCER_ROUTE_CHANGED
+    <Proxy balancer://fcgilb2>
+        BalancerMember "fcgi://$fcgibm1" route=php1st timeout=5 retry=20
+        BalancerMember "fcgi://$fcgibm2" route=php2nd timeout=5 retry=20
+		# Security:technically we aren't blocking anyone but this is the place to make those changes.
+		# In this example all requests are allowed.
+		Require all granted
+
+		# Load Balancing Algorithm Settings: We will configure a simple Round Robin style load balancer.  
+		# This means that all webheads take an equal share of the load.
+        ProxySet lbmethod=$lbmethod stickysession=ROUTEID failonstatus=503
+    </Proxy>
+
+	<FilesMatch "\.php$">
+			# Use the standard TCP socket, which supports connection reuse
+			SetHandler "proxy:balancer://fcgilb2"
+	</FilesMatch>
+	
+	ProxyPass $endpoint "balancer://fcgilb2" maxattempts=6 timeout=60 nofailover=On scolonpathdelim=On
+	# ProxyPassReverse is used so that the client will receive the balancer's IP not the balancer member's.
+    ProxyPassReverse $endpoint "balancer://fcgilb2"
+</Macro>

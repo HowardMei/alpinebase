@@ -1,0 +1,2 @@
+#!/usr/bin/execlineb -P
+logutil-service -f /var/run/s6/php-error-log-fifo /var/log/php/error-logs

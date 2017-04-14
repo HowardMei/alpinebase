@@ -1,0 +1,11 @@
+version: '2'
+services:
+  wpmux:
+    image: hwdm/apswpmux
+    container_name: test_wpmux
+    ports:
+     - "80:80"
+     - "443:443"
+    volumes:
+      - ./html:/var/www/html
+

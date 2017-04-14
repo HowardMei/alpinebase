@@ -1,0 +1,41 @@
+# Define vhost macros for reuse, the <Macro> is evaluated only at start up, and <If> are evaluated for each incoming request.
+# Usage:
+# 	<VirtualHost 192.168.0.2:443>
+#		Use FCGILB2_VHOST / "127.0.0.1:9000" "127.0.0.1:9001" bytraffic "/var/www/example.com/htdocs" example.com www.example.com
+#		Use SSL_CERT  www.demo.com
+# 		... ...
+#		UndefMacro FCGILB2_VHOST
+#		UndefMacro SSL_CERT
+#   </VirtualHost> 
+
+Include /etc/apache2/macros/FCGI_LB2.macro
+
+<Macro FCGILB2_VHOST $endpoint $fcgibm1 $fcgibm2 $lbmethod $docroot $domain $servalias>
+# Usage: Use FCGILB2_VHOST $endpoint $fcgibm1 $fcgibm2 $lbmethod $docroot $domain $servalias
+# Example: Use FCGILB2_VHOST / "127.0.0.1:9000" "127.0.0.1:9001" bytraffic "/var/www/example.com/htdocs" example.com www.example.com
+	ServerName $domain
+	ServerAlias $servalias
+	ErrorLog "/var/log/apache2/$servalias.lb2errorlog"
+	CustomLog "/var/log/apache2/$servalias.lb2accesslog" combinedio env=!dontlog
+	<IfModule proxy_fcgi_module>
+		DocumentRoot $docroot
+		Use FCGI_LB2 $endpoint $fcgibm1 $fcgibm2 $lbmethod
+		UndefMacro FCGI_LB2
+		<Directory $docroot>
+			Options FollowSymLinks
+			AllowOverride All
+			# Warning: Apache 2.4 uses a new module called mod_authz_host for access control. 
+			# Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require. 
+			# Order allow,deny
+			# Allow from all
+			Require all granted
+		</Directory>
+		<Location $endpoint>
+			# Warning: Apache 2.4 uses a new module called mod_authz_host for access control. 
+			# Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require. 
+			# Order allow,deny
+			# Allow from all
+			Require all granted
+		</Location>
+	</IfModule>
+</Macro>

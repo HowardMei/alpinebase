@@ -1,0 +1,25 @@
+# Define fcgi macros for reuse, the <Macro> is evaluated only at start up, and <If> are evaluated for each incoming request.
+# Therefore UndefMacro FCGI_PORT after Use FCGI_PORT is recommended. 
+# Ref: https://httpd.apache.org/docs/2.4/mod/mod_proxy_fcgi.html  & https://wiki.apache.org/httpd/PHP-FPM
+
+<Macro FCGI_PORT $fcgihost $fcgiport >
+# Usage: Use FCGI_PORT $fcgihost $fcgihost
+# Example: Use FCGI_PORT localhost 9000
+	<Proxy "fcgi://$fcgihost:$fcgiport/" enablereuse=on max=10>
+		# Define a matching worker to improve the performance and in this case, re-use the worker (dependent on support from the fcgi application)
+		# But if you have enough idle workers, this would only improve the performance marginally.
+
+		# The part that is matched to the SetHandler is the part that follows the pipe. If you need to distinguish, localhost can be anything unique.
+		# Warning: when you ProxyPass a request to another server (in this case, the php-fpm daemon), authentication restrictions, 
+		# and other configurations placed in a Directory block or .htaccess file, may be bypassed. 
+	</Proxy>
+
+	<FilesMatch "\.php$">
+		# Check for the existence of the resource prior to proxying to the fcgi [php-fpm] backend. 
+		# Warning: This checking will fail if $fcgihost is NOT localhost OR apache2 and php container doesn't share source code volume.
+		<If "-f %REQUEST_FILENAME">
+			# Use the standard TCP socket, which supports connection reuse
+			SetHandler "proxy:fcgi://$fcgihost:$fcgiport"
+		</If>
+	</FilesMatch>
+</Macro>

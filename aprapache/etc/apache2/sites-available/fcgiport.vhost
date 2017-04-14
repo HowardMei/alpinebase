@@ -1,0 +1,17 @@
+# DocumentRoot: The directory out of which you will serve your
+# documents. By default, all requests are taken from this directory, but
+# symbolic links and aliases may be used to point to other locations.
+#
+
+# Include macros to simplify the vhost creation
+Include /etc/apache2/macros/FCGIPORT_VHOST.macro
+Include /etc/apache2/macros/_SERVSTATUS.macro
+
+<VirtualHost *:80>
+# Usage: Use FCGIPORT_VHOST $endpoint $fcgihost $fcgiport $docroot $domain $servalias
+	Use FCGIPORT_VHOST / localhost 9000 "/var/www/localdemo.com/htdocs" localdemo.com www.localdemo.com
+	UndefMacro FCGIPORT_VHOST
+	DirectoryIndex index.php index.html
+	Use _SERVSTATUS "/_svstatus"
+	UndefMacro _SERVSTATUS
+</VirtualHost>

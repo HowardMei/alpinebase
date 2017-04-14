@@ -1,0 +1,9 @@
+#!/bin/sh
+
+. /etc/envvars
+
+if [ -x $(which rsyslogd) ]; then
+	[ -f /etc/rsyslog.conf ] && sed  -i "s|.*$ModLoad imklog.so.*|###imklog.so removed###|g" /etc/rsyslog.conf 
+	exec 2>&1
+	exec rsyslogd -n
+fi

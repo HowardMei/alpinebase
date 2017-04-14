@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+fn=$(basename $0)
+
+echo "$fn:Enabling apache2 service, by symlinking /etc/services.d/apache2 to /etc/service"
+# Diable the runit logger
+rm -rf /etc/services.d/apache2/log
+ln -sf /etc/services.d/apache2 /etc/service
+ln -sf /etc/apache2/sites-available/default.vhost /etc/apache2/sites-enabled 
+

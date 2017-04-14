@@ -1,8 +1,0 @@
-{
-    "watches": [
-      {
-          "type": "nodes",
-          "handler": "/usr/bin/consul-nodes-handler"
-      }
-    ]
-}

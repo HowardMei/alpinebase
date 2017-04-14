@@ -1,0 +1,22 @@
+# Define vhost macros for reuse, the <Macro> is evaluated only at start up, and <If> are evaluated for each incoming request.
+# Usage:
+# 	<VirtualHost 192.168.0.2:443>
+#		Use FCGIPORT_VHOST / 127.0.0.1 9000 "/var/www/demo.com/wpbase" demo.com www.demo.com
+#		Use SSL_CERT  www.demo.com
+# 		... ...
+#		UndefMacro PURE_VHOST SSL_CERT
+#   </VirtualHost> 
+
+<Macro SSL_CERT $certname>
+	<IfModule ssl_module>
+		SSLEngine on
+		SSLCertificateFile /etc/ssl/crt/$certname.crt
+		SSLCertificateKeyFile /etc/ssl/crt/$certname.key
+		SSLCertificateChainFile /etc/ssl/crt/$certname.crt
+        <FilesMatch "\.(cgi|shtml|phtml|php)$">
+			SSLOptions +StdEnvVars
+        </FilesMatch>
+        BrowserMatch "MSIE [2-6]" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
+        BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
+	</IfModule>
+</Macro>

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+# Apache gets grumpy about PID files pre-existing
+rm -f /var/run/apache2/httpd.pid
+rm -f /run/apache2/httpd.pid
+rm -f ${APACHE_PID_FILE}
+
+echo "... ... Starting Service apache2 ... ..."
+
+exec httpd -D FOREGROUND -f /etc/apache2/httpd.conf -k start
+
+echo '... ... Service apache2 Started Successfully ... ...'
+

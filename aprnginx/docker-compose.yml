@@ -1,0 +1,10 @@
+version: '2'
+services:
+  php:
+    image: hwdm/aprnginx
+    container_name: test_nginx
+    ports:
+     - "80:80"
+    volumes:
+      - ./html:/var/www/html
+

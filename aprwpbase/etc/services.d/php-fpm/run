@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv sh
+echo 'Starting the php-fpm[php-fpm7] service ......'
+s6-setuidgid www-data php-fpm7 --nodaemonize --fpm-config /etc/php7/php-fpm.conf
+
