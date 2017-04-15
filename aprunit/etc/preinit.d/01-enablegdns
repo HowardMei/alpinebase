@@ -1,0 +1,47 @@
+#!/bin/sh
+
+set -e
+fn=$(basename $0)
+
+echo "$fn:Enabling go-dnsmasq service, by symlinking /etc/services.d/00-go-dnsmasq to /etc/service"
+	ln -s /etc/services.d/01-go-dnsmasq /etc/service/
+
+CONTAINER_HOST=$(cat /etc/hostname)
+if [ -z "${CONTAINER_HOST}" ]; then
+    echo "Failed to get hostname, aborting" >&2
+    exit 1
+fi
+
+if [ -z "${CONTAINER_RESOLVER}" ]; then
+    CONTAINER_RESOLVER=route
+fi
+
+case "${CONTAINER_RESOLVER}" in
+    interface)
+        if [ -z "${CONTAINER_RESOLVER_INTERFACENAME}" ]; then
+            CONTAINER_RESOLVER_INTERFACENAME=eth0
+        fi
+
+        if [ -z "${CONTAINER_RESOLVER_INTERFACETYPE}" ]; then
+            CONTAINER_RESOLVER_INTERFACETYPE=inet
+        fi
+
+        CONTAINER_IP=$(ip -o addr show ${CONTAINER_RESOLVER_INTERFACENAME}|grep "${CONTAINER_RESOLVER_INTERFACETYPE} "|awk '{ print $4; }'|sed -e 's/\/.*$//')
+        ;;
+
+    route)
+        CONTAINER_IP=$(ip route get 1|awk '{ print $NF; exit; }')
+        ;;
+esac
+
+if [ -z "${CONTAINER_IP}" ]; then
+    echo "Failed to get IP address, aborting" >&2
+    exit 2
+fi
+
+echo "$fn:Prepared CONTAINER_HOST:${CONTAINER_HOST} and CONTAINER_IP:${CONTAINER_IP} for go-dnsmasq ... ..."
+
+export CONTAINER_HOST
+export CONTAINER_IP
+
+unset fn

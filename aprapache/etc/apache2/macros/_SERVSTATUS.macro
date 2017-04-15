@@ -12,13 +12,13 @@
 # Usage: Use _SERVSTATUS $endpoint
 # Example: Use _SERVSTATUS "/_svstatus"
 	<IfModule status_module>
-	   <Location /server-status>
+	   <Location "/server-status">
 			AllowOverride none
 			# Warning: Apache 2.4 uses a new module called mod_authz_host for access control. 
 			# Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require. 
 			Require all denied
 	   </Location>
-	   <Location $endpoint>
+	   <Location "$endpoint">
 				SetHandler server-status
 				# Deny external access by default
 				# Order deny,allow

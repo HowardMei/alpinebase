@@ -3,10 +3,10 @@
 This layer 2 docker image is built upon [hwdm/apbase image](https://hub.docker.com/r/hwdm/apbase/) `35e` tag
 
 ## Description
-This is the base image with runit process manager.
+This is the base image with runit process manager and go-dnsmasq dns resolver.
 
 ## Additions
-Packages: `runit rsyslog logrotate`
+Packages: `runit go-dnsmasq libressl ca-certificates bind-tools curl`
 
 Files and Folders: 
 ```
@@ -25,9 +25,10 @@ Files and Folders:
 ```
 
 ## Usage
+Convention: Applications dirname should start from 10, like 10-apache, 11-nginx etc.
 Example: nginx
+Add Service Enabling Script: /etc/preinit.d/10-nginxon
 Add Daemon Management Scripts: /etc/services.d/nginx/{run, finish}
-Add Service Enabling Script: /etc/preinit.d/02-nginxon
 
 ## Tags
 

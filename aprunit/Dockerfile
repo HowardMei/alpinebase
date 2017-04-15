@@ -2,11 +2,16 @@ FROM            hwdm/apbase:35e
 MAINTAINER      Howard Mei      <howardleomei@gmail.com>
 
 ENV 			V=2.1.2-r3
+ENV 			GODNSMASQ_VERSION=1.0.7
+
+ADD             https://github.com/janeczku/go-dnsmasq/releases/download/${GODNSMASQ_VERSION}/go-dnsmasq-min_linux-amd64   /bin/go-dnsmasq
 
 COPY				etc			/etc
 COPY				usr			/usr
 COPY				entrypoint  /entrypoint
 	
 
-RUN 			apk-install runit=${V} rsyslog logrotate && \
-				apk-cleanup
+RUN 			apk-install libressl ca-certificates bind-tools curl runit=${V} && \
+				chmod a+x /bin/go-dnsmasq && chmod a+x /etc/preinit.d/* && \
+				addgroup go-dnsmasq && adduser -D -g "GO-DNSMASQ Daemon" -s /bin/sh -G go-dnsmasq go-dnsmasq && \
+				setcap CAP_NET_BIND_SERVICE=+eip /bin/go-dnsmasq && apk-cleanup

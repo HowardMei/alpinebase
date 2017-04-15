@@ -22,6 +22,6 @@ for _script in /etc/postclr.d/*; do
 		echo >&2 "*** Failed to run: ${_script}. Please chmod +x ${_script}"
     fi
 done
-
+\rm -f /etc/envvars /etc/runit/stopall
 echo 'Shutting down the container ... ...'
 test -x /etc/init.d/rc && /etc/init.d/rc ${LAST}
