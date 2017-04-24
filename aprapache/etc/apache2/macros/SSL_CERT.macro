@@ -7,12 +7,14 @@
 #		UndefMacro PURE_VHOST SSL_CERT
 #   </VirtualHost> 
 
-<Macro SSL_CERT $certname>
+<Macro SSL_CERT $domain $certname>
+# Usage: Use SSL_CERT $domain $certname
+# Example: Use SSL_CERT example.com main_v1
 	<IfModule ssl_module>
 		SSLEngine on
-		SSLCertificateFile /etc/ssl/crt/$certname.crt
-		SSLCertificateKeyFile /etc/ssl/crt/$certname.key
-		SSLCertificateChainFile /etc/ssl/crt/$certname.crt
+		SSLCertificateFile /etc/ssl/$domain/$certname.crt
+		SSLCertificateKeyFile /etc/ssl/$domain/$certname.key
+		SSLCertificateChainFile /etc/ssl/$domain/$certname.crt
         <FilesMatch "\.(cgi|shtml|phtml|php)$">
 			SSLOptions +StdEnvVars
         </FilesMatch>

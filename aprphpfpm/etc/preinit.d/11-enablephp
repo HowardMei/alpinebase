@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+fn=$(basename $0)
+
+echo "$fn:Enabling php-fpm service, by symlinking /etc/services.d/11-php-fpm to /etc/service/"
+
+mkdir -p /run/php /run/php/sessions /var/log/php
+chown www-data:www-data /run/php /run/php/sessions /var/log/php
+
+if [ -n ${_EXPOSE_TO} ]; then
+    _EXPOSE_TO="$(echo ${_EXPOSE_TO} | sed -e 's/[]\/$*.^|[]/\\&/g' 2>/dev/null)"
+    sed -i s"/^listen.*$/listen = ${_EXPOSE_TO}/g" /etc/php7/php-fpm.d/www.conf
+fi
+
+ln -s /etc/services.d/11-php-fpm /etc/service/
+

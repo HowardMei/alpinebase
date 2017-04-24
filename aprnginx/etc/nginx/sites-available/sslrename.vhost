@@ -1,0 +1,28 @@
+# If try to use www.domain.com instead of domain.com, listen on the *wrong* one and
+# redirect it to the right one -- http://wiki.nginx.org/Pitfalls#Server_Name
+server {
+  # don't forget to tell on which port this server listens
+  listen    [::]:80;
+  listen    80;
+
+  # listen on the non-www host
+  server_name _DOMAIN_NAME_ _SERVER_NAME_;
+
+  # and redirect all to the www host permanently
+  return    301     https://_SERVER_NAME_$request_uri;
+}
+
+
+server {
+  listen [::]:443 ssl http2;
+  listen 443 ssl http2;
+
+  # listen on the non-www host
+  server_name _DOMAIN_NAME_;
+
+  include /etc/nginx/conf.d/ssl.conf;
+
+  # and redirect to the www host (declared below)
+  return 301 https://_SERVER_NAME_$request_uri;
+}
+

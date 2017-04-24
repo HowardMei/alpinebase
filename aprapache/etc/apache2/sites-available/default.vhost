@@ -9,9 +9,9 @@ Include /etc/apache2/macros/_SERVSTATUS.macro
 
 <VirtualHost *:80>
 # Usage: Use PURE_VHOST $endpoint $docroot $domain $servalias
-	Use PURE_VHOST / "/var/www/localhost/htdocs" localhost localhost
-	UndefMacro PURE_VHOST
-	DirectoryIndex index.html
-	Use _SERVSTATUS "/_svstatus"
-	UndefMacro _SERVSTATUS
+Use PURE_VHOST / "/var/www/localhost/htdocs" localhost localhost
+UndefMacro PURE_VHOST
+DirectoryIndex index.html
+Use _SERVSTATUS "/_svstatus"
+UndefMacro _SERVSTATUS
 </VirtualHost>

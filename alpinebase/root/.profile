@@ -1,15 +1,15 @@
 ####################################### SHELL PROFILE #########################################
-#### Fall back profile for login shells [docker login, su - or *sh --login/-l and ssh login]. 
+#### Fall back profile for login shells [docker login, su - or *sh --login/-l and ssh login].
 #### In bash or most desktop linux, this file will NOT be sourced during user login session
 #### unless .bash_profile or .bash_login sources this file EXPLICITLY. We do it in .bash_profile.
 #### One-time setup was done by .profile (or .bash_profile), and per-shell/subshell by .bashrc.
 #### Extra profiles are stored in /etc/profile.d/*.sh
-
-
+# Read the presaved env var file
+[ -r /etc/envvars ] && . /etc/envvars
 if [ -z ${SH_PROFILE+x} ]; then
-	export SH_PROFILE='$HOME/.profile initialized.'
+    export SH_PROFILE='$HOME/.profile initialized.'
 else
-	unset SH_PROFILE
+    unset SH_PROFILE
 fi
 
 ## Prefer US English and use UTF-8
@@ -27,7 +27,7 @@ export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH
 ## This PS1 checking separates non-interactive and interactive configurations apart.
 ## Most running scripts and programs are under non-interactive non-login shells.
 ## Keep configuration above this line simple and essential to avoid various errors.
-[ -z "$PS1" ] && return 
+[ -z "$PS1" ] && return
 
 export PS1="[${USER}]:$"
 
@@ -64,3 +64,5 @@ if [ -d "${HOME}/.profiles.d" ]; then
 fi
 
 export SH_PROFILE='$HOME/.profile reloaded.'
+# Save the env vars to avoid app introduced mess up.
+export > /etc/envvars

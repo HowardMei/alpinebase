@@ -1,0 +1,57 @@
+#!/bin/sh
+
+set -e
+fn=$(basename $0)
+
+echo "$fn:Enabling nginx service, by symlinking /etc/services.d/nginx to /etc/service"
+
+mkdir -p /run/nginx /run/cache/nginx /var/log/nginx
+chown www-data:www-data /run/nginx /run/cache/nginx /var/log/nginx
+
+echo "Server Mode is ${_SERVER_MODE}"
+case "${_SERVER_MODE}" in
+    fcgi | FCGI | phpfpm | PHPFPM)
+        if [ -r "/etc/ssl/${_SERVER_NAME}/${_SSL_CERT}.crt" ]; then
+            [ ! -r /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}" ] && cp /etc/nginx/sites-available/ssldirect.vhost /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
+            sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/" /etc/nginx/conf.d/ssl.conf
+            sed -i s"/_SSL_CERT_/${_SSL_CERT}/" /etc/nginx/conf.d/ssl.conf
+            sed -i s"/^#ssl_certificate/ssl_certificate/" /etc/nginx/conf.d/ssl.conf
+            sed -i s"/^#ssl_certificate_key/ssl_certificate_key/" /etc/nginx/conf.d/ssl.conf
+            _LISTEN_TO1=$(escape "${_LISTEN_TO1}")
+            sed -i s"/_LISTEN_TO_/${_LISTEN_TO1}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
+            sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
+            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
+        else
+            [ ! -r /etc/nginx/sites-enabled/${_SERVER_NAME} ] && cp /etc/nginx/sites-available/direct.vhost /etc/nginx/sites-enabled/${_SERVER_NAME}
+            sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
+            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
+        fi
+    ;;
+    fcgilb2 | FCGILB2 | lb2 | LB2)
+
+    ;;
+    fcgilb3 | FCGILB3 | lb3 | LB3)
+
+    ;;
+    direct | simple | DIRECT | SIMPLE)
+        if [ -r "/etc/ssl/${_SERVER_NAME}/${_SSL_CERT}.crt" ]; then
+            [ ! -r /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}" ] && cp /etc/nginx/sites-available/ssldirect.vhost /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
+            sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/" /etc/nginx/conf.d/ssl.conf
+            sed -i s"/_SSL_CERT_/${_SSL_CERT}/" /etc/nginx/conf.d/ssl.conf
+            sed -i s"/^#ssl_certificate/ssl_certificate/" /etc/nginx/conf.d/ssl.conf
+            sed -i s"/^#ssl_certificate_key/ssl_certificate_key/" /etc/nginx/conf.d/ssl.conf
+            sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
+            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
+        else
+            [ ! -r /etc/nginx/sites-enabled/${_SERVER_NAME} ] && cp /etc/nginx/sites-available/direct.vhost /etc/nginx/sites-enabled/${_SERVER_NAME}
+            sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
+            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
+        fi
+    ;;
+    -- | *)
+    ;;
+esac
+
+ln -sf /etc/services.d/nginx /etc/service
+
+unset fn

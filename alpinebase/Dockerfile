@@ -1,7 +1,7 @@
 FROM            alpine:3.5
 MAINTAINER      Howard Mei      <howardleomei@gmail.com>
 ENV             LOCALE          en_US.UTF-8
-ENV				TZ				UTC
+ENV             TZ              Asia/Singapore
 
 # Set Default User and Home Dir
 USER            root
@@ -17,22 +17,22 @@ ENV             LANG            $LOCALE
 ENV             LANGUAGE        $LOCALE
 ENV             LC_ALL          $LOCALE
 
-RUN 			mkdir -p /usr/sbin && mkdir -p /usr/local/sbin && \
-				chmod -R 0755 /usr/sbin /usr/local/sbin && \
-				chmod 0755 /entrypoint && chmod 0644 /etc/apk/repositories && \
-				chmod 0755 /usr/bin/apk-install /usr/bin/apk-remove \
-				/usr/bin/apk-cleanup /usr/bin/set-timezone && \
-	            apk add --update --no-cache sed tar unzip libcap su-exec && \
-	            set-timezone ${TZ} && apk-cleanup && \
-	            ln -s /sbin/su-exec /usr/sbin/sux && \
-	            mkdir -p /var/www && chmod -R 0755 /var/www && \
-	            addgroup -g 82 -S www-data && adduser -u 82 -S -s /bin/sh -g 'WWW Group' \
-	            -G www-data -D www-data && chown -R www-data:www-data /var/www
-				
+RUN             chmod 0755 /entrypoint && chmod 0644 /etc/apk/repositories && \
+                chmod 0755 /usr/local/bin/* /usr/local/sbin/* && \
+                apk add --update --no-cache sed tar unzip libcap su-exec dumb-init && \
+                set-timezone ${TZ} && apk-cleanup && \
+                ln -s /sbin/su-exec /usr/sbin/sux && ln -s /usr/bin/dumb-init /usr/sbin/dinit && \
+                mkdir /run/cache /run/lock /run/tmp && chmod -R 0755 /run/cache /run/lock && \
+                chmod -R 1777 /run/tmp && mkdir -p /var/www && chmod -R 0750 /var/www && \
+                addgroup -g 82 -S www-data && adduser -u 82 -S -s /bin/sh -g 'WWW Group' \
+                -G www-data -D www-data && chown -R www-data:www-data /var/www
+
 # Set Default Working Dir
 WORKDIR         /var/www
 
 # Define the Entry Point and/or Default Command
+#ENTRYPOINT       ["/usr/sbin/dinit", "--"]
+# You can always use following entrypoint instead, because it's included.
 ENTRYPOINT      ["/entrypoint"]
 ## Notice: Use ["/entrypoint"] as ENTRYPOINT instead of ["/bin/sh","-ilc"] to avoid arg parsing issue
 ## /bin/sh -ilc "arg1 arg2 ... argn" has its own builtin args parser which demands full quoted args

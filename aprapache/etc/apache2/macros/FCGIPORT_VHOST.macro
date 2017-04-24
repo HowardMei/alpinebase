@@ -1,41 +1,41 @@
 # Define vhost macros for reuse, the <Macro> is evaluated only at start up, and <If> are evaluated for each incoming request.
 # Usage:
-# 	<VirtualHost 192.168.0.2:443>
-#		Use FCGIPORT_VHOST / 127.0.0.1 9000 "/var/www/demo.com/wpbase" demo.com www.demo.com
-#		Use SSL_CERT  www.demo.com
-# 		... ...
-#		UndefMacro FCGIPORT_VHOST
-#		UndefMacro SSL_CERT
-#   </VirtualHost> 
+#   <VirtualHost 192.168.0.2:443>
+#       Use FCGIPORT_VHOST / 127.0.0.1 9000 "/var/www/demo.com/wpbase" demo.com www.demo.com
+#       Use SSL_CERT  www.demo.com
+#       ... ...
+#       UndefMacro FCGIPORT_VHOST
+#       UndefMacro SSL_CERT
+#   </VirtualHost>
 
 Include /etc/apache2/macros/FCGI_PORT.macro
 
-<Macro FCGIPORT_VHOST $endpoint $fcgihost $fcgiport $docroot $domain $servalias>
-# Usage: Use FCGIPORT_VHOST $endpoint $fcgihost $fcgiport $docroot $domain $servalias
-# Example: Use FCGIPORT_VHOST / localhost 9000 "/var/www/example.com/htdocs" example.com www.example.com
+<Macro FCGIPORT_VHOST $endpoint $fcgilisten $docroot $domain $servalias>
+# Usage: Use FCGIPORT_VHOST $endpoint $fcgilisten $docroot $domain $servalias
+# Example: Use FCGIPORT_VHOST / localhost:9000 "/var/www/example.com/htdocs" example.com www.example.com
     ServerName $domain
     ServerAlias $servalias
     ErrorLog "/var/log/apache2/$servalias.errorlog"
     CustomLog "/var/log/apache2/$servalias.accesslog" combinedio env=!dontlog
-	<IfModule proxy_fcgi_module>
-		DocumentRoot $docroot
-		Use FCGI_PORT $fcgihost $fcgiport
-		UndefMacro FCGI_PORT
-		<Directory $docroot>
-			Options FollowSymLinks
-			AllowOverride All
-			# Warning: Apache 2.4 uses a new module called mod_authz_host for access control. 
-			# Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require. 
-			# Order allow,deny
-			# Allow from all
-			Require all granted
-		</Directory>
-		<Location $endpoint>
-			# Warning: Apache 2.4 uses a new module called mod_authz_host for access control. 
-			# Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require. 
-			# Order allow,deny
-			# Allow from all
-			Require all granted
-		</Location>
-	</IfModule>
+    <IfModule proxy_fcgi_module>
+        DocumentRoot $docroot
+        Use FCGI_PORT $fcgilisten
+        UndefMacro FCGI_PORT
+        <Directory "$docroot">
+            Options FollowSymLinks
+            AllowOverride All
+            # Warning: Apache 2.4 uses a new module called mod_authz_host for access control.
+            # Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require.
+            # Order allow,deny
+            # Allow from all
+            Require all granted
+        </Directory>
+        <Location "$endpoint">
+            # Warning: Apache 2.4 uses a new module called mod_authz_host for access control.
+            # Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require.
+            # Order allow,deny
+            # Allow from all
+            Require all granted
+        </Location>
+    </IfModule>
 </Macro>

@@ -1,7 +1,0 @@
-#!/bin/sh
-
-## Ref: http://manpages.ubuntu.com/manpages/zesty/man8/php-fpm7.0.8.html 
-
-sux www-data php-fpm7 --nodaemonize --pid /run/php/php-fpm.pid --php-ini /etc/php7/php.ini --fpm-config /etc/php7/php-fpm.conf
-
-echo '... ... Service php-fpm[php-fpm7] Started Successfully ... ...'

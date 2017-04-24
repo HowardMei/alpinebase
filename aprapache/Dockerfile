@@ -2,6 +2,18 @@ FROM            hwdm/aprunit
 MAINTAINER      Howard Mei      <howardleomei@gmail.com>
 
 ENV				V=2.4.25-r0
+# _SERVER_MODE options: default/direct, fcgiport/FCGIPORT, fcgisock/FCGISOCK, fcgilb2/FCGILB2, fcgilb3/FCGILB3
+ENV				_SERVER_MODE="default"
+ENV				_END_POINT="/"
+ENV				_DOC_ROOT="/var/www/localhost/htdocs"
+ENV				_DOMAIN="localhost"
+ENV				_SERVER_ALIAS="localhost"
+ENV				_SSL_CERT=""
+ENV				_LISTEN_TO1="127.0.0.1:9000"
+ENV				_LISTEN_TO2="127.0.0.1:9001"
+ENV				_LISTEN_TO3="127.0.0.1:9002"	
+# Support 
+ENV				_LB_METHOD="byrequest"	
 
 # Add the files
 ADD 			etc 			/etc

@@ -1,0 +1,27 @@
+#!/bin/sh
+    
+
+#---  FUNCTION  -------------------------------------------------------------------------------------------------------
+#          NAME:  isaport
+#%   DESCRIPTION:  Check if the port number is available
+#%   USAGE: if [ -z $(isaport 53) ]; then OR if isaport 80 2>/tmp/shbin.log; then
+#%   REQUIRES: netstat, grep
+#----------------------------------------------------------------------------------------------------------------------
+unset -f isaport
+isaport() {
+    local pn="$1"
+    if netstat -pnltu 2>/tmp/shbin.log | grep ":$pn " | grep -iq "LISTEN"; then
+        #echo "$@ is busy." >&2
+        echo "$(netstat -nltu | grep ":$pn " | grep -i "LISTEN")" >&2
+        return 1
+    else
+        echo "$pn is available."
+        return 0
+    fi
+}
+
+if [ $# -lt 1 ]; then
+    export -f isaport 2>/tmp/shbin.log
+else
+    isaport "$@" >/tmp/shbin.log
+fi

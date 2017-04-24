@@ -1,0 +1,23 @@
+# DocumentRoot: The directory out of which you will serve your
+# documents. By default, all requests are taken from this directory, but
+# symbolic links and aliases may be used to point to other locations.
+#
+
+# Include macros to simplify the vhost creation
+Include /etc/apache2/macros/FCGIPORT_VHOST.macro
+Include /etc/apache2/macros/SSL_CERT.macro
+Include /etc/apache2/macros/_PHPINFO.macro
+Include /etc/apache2/macros/_SERVSTATUS.macro
+
+<VirtualHost *:443>
+# Usage: Use FCGISOCK_VHOST $endpoint $fcgilisten $docroot $domain $servalias
+Use FCGISOCK_VHOST / "/run/php/php-fpm.sock" "/var/www/localdemo.com/htdocs" localdemo.com www.localdemo.com
+UndefMacro FCGISOCK_VHOST
+Use SSL_CERT $domain $certname
+UndefMacro SSL_CERT
+DirectoryIndex index.php
+Use _PHPINFO
+UndefMacro _PHPINFO
+Use _SERVSTATUS "/_svstatus"
+UndefMacro _SERVSTATUS
+</VirtualHost>

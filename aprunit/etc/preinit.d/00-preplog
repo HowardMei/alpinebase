@@ -1,12 +1,12 @@
-#!/bin/sh
+#!/usr/bin/env /bin/sh
 
 set -e
 fn=$(basename $0)
-
+#echo "\$_:$_   \$0:$0   \$-:$-   \$@:$@"
 echo "$fn:Preparing /etc/services.d services log folders and loggers ... ..."
 for _dir in $(ls -1 /etc/services.d); do
-	[ ! -d /etc/services.d/${_dir}/log ] && mkdir /etc/services.d/${_dir}/log 2>/dev/null
-	[ ! -e /etc/services.d/${_dir}/log/run ] && ln -sf /etc/runit/logger /etc/services.d/${_dir}/log/run 2>/dev/null
+    [ ! -d /etc/services.d/${_dir}/log ] && mkdir /etc/services.d/${_dir}/log 2>/dev/null
+    [ ! -e /etc/services.d/${_dir}/log/run ] && ln -sf /etc/runit/logger /etc/services.d/${_dir}/log/run 2>/dev/null
 done
 
 echo "$fn:Creating /etc/service directory ... ..."

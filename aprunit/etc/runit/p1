@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+#PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;
 
 echo "Starting one-time pre-service init scripts in /etc/preinit.d"
 
@@ -11,23 +11,19 @@ for _script in /etc/preinit.d/*; do
         ${_script}
         retval=$?
         if [ ${retval} != 0 ]; then
-			echo >&2 "*** Failed with return value: $?"
-			if [ ${SCRIPT_FAILMODE} -eq 1 ]; then
-				touch /etc/runit/stopall
-				exit ${retval}
-			fi
+            echo >&2 "*** Failed with return value: $?"
+            if [ ${SCRIPT_FAILMODE} -eq 1 ]; then
+                touch /etc/runit/stopall
+                exit ${retval}
+            fi
         fi
     else
-		echo >&2 "*** Failed to run: ${_script}. Please chmod +x ${_script}"
+        echo >&2 "*** Failed to run: ${_script}. Please chmod +x ${_script}"
     fi
 done
 
-# Save all environment variables sent to container
-# Including env vars being exported from preinit.d scripts
-export > /etc/envvars
-
 touch /etc/runit/runit
 touch /etc/runit/stopit
-chmod 0 /etc/runit/stopit 
+chmod 0 /etc/runit/stopit
 
-unset _script 
+unset _script

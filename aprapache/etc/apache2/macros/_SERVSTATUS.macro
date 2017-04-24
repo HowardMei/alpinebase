@@ -1,34 +1,39 @@
 # Define vhost macros for reuse, the <Macro> is evaluated only at start up, and <If> are evaluated for each incoming request.
 # Ref: https://httpd.apache.org/docs/2.4/upgrading.html && https://httpd.apache.org/docs/2.4/sections.html
 # Usage:
-# 	<VirtualHost 192.168.0.1:80>
-#		Use PURE_VHOST / "/var/www/localhost/htdocs" localhost localhost
-# 		...
-#		Use _SERVSTATUS "/_svstatus"
-#		UndefMacro PURE_VHOST _SERVSTATUS
-#   </VirtualHost> 
+#   <VirtualHost 192.168.0.1:80>
+#       Use PURE_VHOST / "/var/www/localhost/htdocs" localhost localhost
+#       ...
+#       Use _SERVSTATUS "/_svstatus"
+#       UndefMacro PURE_VHOST _SERVSTATUS
+#   </VirtualHost>
 
 <Macro _SERVSTATUS $endpoint>
 # Usage: Use _SERVSTATUS $endpoint
 # Example: Use _SERVSTATUS "/_svstatus"
-	<IfModule status_module>
-	   <Location "/server-status">
-			AllowOverride none
-			# Warning: Apache 2.4 uses a new module called mod_authz_host for access control. 
-			# Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require. 
-			Require all denied
-	   </Location>
-	   <Location "$endpoint">
-				SetHandler server-status
-				# Deny external access by default
-				# Order deny,allow
-				# Deny from all
-				# Only allows for internal access, but Allow and Satisfy are deprecated in Apache>=2.4
-				# Allow from 127.0.0.1 ::1
-				# Satisfy all
-				#Require ip 127.0.0.1 ::1
-				Require local
-	   </Location>
+    <IfModule status_module>
+       <Location "/server-status">
+            AllowOverride none
+            # Warning: Apache 2.4 uses a new module called mod_authz_host for access control.
+            # Instead of the Order, Allow and Deny, Satisfy directives in Apache 2.2, it uses a new directive Require.
+            Require all denied
+       </Location>
+       <Location "$endpoint">
+                SetHandler server-status
+                # Deny external access by default
+                # Order deny,allow
+                # Deny from all
+                # Only allows for internal access, but Allow and Satisfy are deprecated in Apache>=2.4
+                # Allow from 127.0.0.1 ::1
+                # Satisfy all
+                # IPv4 loopback address
+                Require ip 127.0.0.1
+                # IPv6 loopback address
+                Require ip ::1
+                # 172.17.*.* is the subnet of docker containers
+                Require ip 172.17
+                #Require local
+       </Location>
    </IfModule>
 </Macro>
 

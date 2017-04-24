@@ -1,11 +1,110 @@
 #!/bin/sh
 
 set -e
+# Close STDOUT file descriptor
+# exec 1<&-
+# Close STDERR FD
+#exec 2<&-
+# Open STDOUT as /var/log/10-apache2/service.log file for read and write.
+# exec 1<>/var/log/10-apache2/service.log
+# Redirect STDERR to STDOUT too
+#exec 2>&1
+# Redirect STDERR to the file /var/log/10-apache2/service.log
+#exec 2<>/var/log/10-apache2/service.errorlog
 fn=$(basename $0)
 
 echo "$fn:Enabling apache2 service, by symlinking /etc/services.d/10-apache2 to /etc/service"
 # Use the runit logger fifo
 #rm -rf /etc/services.d/10-apache2/log
-ln -s /etc/services.d/10-apache2 /etc/service/
-ln -s /etc/apache2/sites-available/default.vhost /etc/apache2/sites-enabled/
+echo "Server Mode is ${_SERVER_MODE}"
+case "${_SERVER_MODE}" in
+    fcgiport | FCGIPORT | port | PORT)
+        sed -i s"/direct.conf$/fcgi.conf/" /etc/apache2/httpd.conf
+        if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/sslfcgiport.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use FCGIPORT_VHOST.*$/Use FCGIPORT_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        else
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgiport.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use FCGIPORT_VHOST.*$/Use FCGIPORT_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        fi
+    ;;
+    fcgisock | FCGISOCK | sock | SOCK)
+        sed -i s"/direct.conf$/fcgi.conf/" /etc/apache2/httpd.conf
+        if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/sslfcgisock.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use FCGISOCK_VHOST.*$/Use FCGISOCK_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        else
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgisock.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use FCGISOCK_VHOST.*$/Use FCGISOCK_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        fi
+    ;;
+    fcgilb2 | FCGILB2 | lb2 | LB2)
+        sed -i s"/direct.conf$/lbproxy.conf/" /etc/apache2/httpd.conf
+        case ${_LB_METHOD} in
+            byrequests | bytraffic | bybusyness | heartbeat)
+            ;;
+            -- | *)
+            echo >&2 "Load Balance Method ${_LB_METHOD} is NOT supported. It should be one of byrequests | bytraffic | bybusyness | heartbeat"
+            exit 0
+            ;;
+        esac
+        if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgilib2.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_LISTEN_TO2 $_LB_METHOD $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use FCGILB2_VHOST.*$/Use FCGILB2_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        else
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgilib2.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_LISTEN_TO2 $_LB_METHOD $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use FCGILB2_VHOST.*$/Use FCGILB2_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        fi
+    ;;
+    fcgilb3 | FCGILB3 | lb3 | LB3)
+        sed -i s"/direct.conf$/lbproxy.conf/" /etc/apache2/httpd.conf
+        case ${_LB_METHOD} in
+            byrequests | bytraffic | bybusyness | heartbeat)
+            ;;
+            -- | *)
+            echo >&2 "Load Balance Method ${_LB_METHOD} is NOT supported. It should be one of byrequests | bytraffic | bybusyness | heartbeat"
+            exit 0
+            ;;
+        esac
+        if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgilib3.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_LISTEN_TO2 $_LISTEN_TO3 $_LB_METHOD $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use FCGILB3_VHOST.*$/Use FCGILB3_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        else
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgilib3.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_LISTEN_TO2 $_LISTEN_TO3 $_LB_METHOD $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use FCGILB3_VHOST.*$/Use FCGILB3_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        fi
+    ;;
+    -- | *)
+        if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/ssldefault.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use PURE_VHOST.*$/Use PURE_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        else
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/default.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            paras=$(escape "$_END_POINT $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
+            sed -i s"/^Use PURE_VHOST.*$/Use PURE_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        fi
+    ;;
+esac
 
+ln -s /etc/services.d/10-apache2 /etc/service/
+
+unset fn paras

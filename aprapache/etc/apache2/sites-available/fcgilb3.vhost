@@ -1,0 +1,23 @@
+# DocumentRoot: The directory out of which you will serve your
+# documents. By default, all requests are taken from this directory, but
+# symbolic links and aliases may be used to point to other locations.
+#
+
+# Include macros to simplify the vhost creation
+Include /etc/apache2/macros/FCGILB3_VHOST.macro
+Include /etc/apache2/macros/_PHPINFO.macro
+Include /etc/apache2/macros/_LBMANAGER.macro
+Include /etc/apache2/macros/_SERVSTATUS.macro
+
+<VirtualHost *:80>
+# Usage: Use FCGILB3_VHOST $endpoint $fcgibm1 $fcgibm2 $fcgibm3 $lbmethod $docroot $domain $servalias
+Use FCGILB3_VHOST / "127.0.0.1:9000" "127.0.0.1:9001" "127.0.0.1:9002" bytraffic "/var/www/localhost/htdocs" localhost localhost
+UndefMacro FCGILB3_VHOST
+DirectoryIndex index.php
+Use _PHPINFO
+UndefMacro _PHPINFO
+Use _LBMANAGER "/_lbmanager"
+UndefMacro _LBMANAGER
+Use _SERVSTATUS "/_svstatus"
+UndefMacro _SERVSTATUS
+</VirtualHost>

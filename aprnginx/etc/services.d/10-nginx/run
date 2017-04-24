@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -e
+
+echo "... ... Starting Service nginx ... ..."
+
+# Close STDOUT file descriptor
+exec 1<&-
+# Close STDERR FD
+exec 2<&-
+
+# Open STDOUT as a file for read and write.
+exec 1<>/var/log/run_nginx.errorlog
+
+# Redirect STDERR to STDOUT
+exec 2>&1
+
+echo "Startup log of the command line: exec httpd -D FOREGROUND -f /etc/apache2/httpd.conf -k start"
+echo "............................................................................................."
+
+[ -r /etc/envvars ] && . /etc/envvars
+
+exec nginx -c /etc/nginx/nginx.conf -g 'daemon off;';
+
+echo '... ... Service nginx Started Successfully ... ...'

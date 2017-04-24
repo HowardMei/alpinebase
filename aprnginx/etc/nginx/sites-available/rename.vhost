@@ -1,0 +1,16 @@
+## Ref: https://github.com/h5bp/server-configs-nginx
+## Ref: https://support.rackspace.com/how-to/install-nginx-and-php-fpm-running-on-unix-file-sockets/
+
+# If try to use www.domain.com instead of domain.com, listen on the *wrong* one and
+# redirect it to the right one -- http://wiki.nginx.org/Pitfalls#Server_Name
+server {
+  # don't forget to tell on which port this server listens
+  listen    [::]:80;
+  listen    80;
+
+  # listen on the non-www host
+  server_name _DOMAIN_NAME_;
+
+  # and redirect all to the www host permanently
+  return    301     http://_SERVER_NAME_$request_uri;
+}

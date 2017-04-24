@@ -1,0 +1,45 @@
+## Ref: https://github.com/h5bp/server-configs-nginx
+## Ref: https://support.rackspace.com/how-to/install-nginx-and-php-fpm-running-on-unix-file-sockets/
+
+server {
+  # listen [::]:80 deferred; # for Linux
+  # listen 80 deferred; # for Linux
+  listen    [::]:80;
+  listen    80;
+
+# The host name to respond to
+  server_name   _SERVER_NAME_;
+
+# Config for serving static files
+  include       /etc/nginx/conf.d/static.conf;
+
+# Specify the document root
+  root          /var/www/_SERVER_NAME_/htdocs;
+  index         index.html;
+
+ # # Custom Loggings
+  access_log    /var/log/nginx/_SERVER_NAME_.accesslog main;
+  access_log    /var/log/nginx/_SERVER_NAME_.robots.accesslog main if=$is_bot;
+  error_log     /var/log/nginx/_SERVER_NAME_.errorlog notice;
+
+# Include the default location settings (before the main locations)
+  include       /etc/nginx/conf.d/default.conf;
+
+# Try to serve files
+  location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+# Don't display the php source code
+  location ~ ^.+\.php(?:/.*)?$
+    {
+        return 405;
+    }
+
+  location /_svstatus {
+        stub_status on;
+        # 172.17.0.0/16 is for docker containers internal subnet
+        allow   127.0.0.1 172.17.0.0/16;
+        deny    all;
+    }
+}

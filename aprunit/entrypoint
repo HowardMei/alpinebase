@@ -4,21 +4,24 @@ set -e
 _cmdargn=$#
 _cmdargs=${@}
 
-if [ -n ${SCRIPT_FAILMODE} ]; then
-	SCRIPT_FAILMODE=1
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+if [ -z ${SCRIPT_FAILMODE} ]; then
+    # 0: Ignore the failures, 1: Exit on any failure
+    SCRIPT_FAILMODE=1
 fi
 
 
 shutdown() {
   # Running post-daemon clearing tasks
   /etc/runit/p3
- 
+
   # first shutdown any service started by runit
   for _srv in $(ls -1 /etc/service); do
     sv force-stop ${_srv}
   done
 
-  # shutdown runsvdir command  
+  # shutdown runsvdir command
   kill -HUP $RUNSVDIR
   wait $RUNSVDIR
 
@@ -35,14 +38,15 @@ shutdown() {
 }
 
 \rm -f /etc/runit/stopall 2>/dev/null
-
+# Save all environment variables before executing preinit.d scripts
+export > /etc/envvars
 # Run pre-deamon tasks
 /etc/runit/p1
 
-
+[ -r /etc/envvars ] && . /etc/envvars
 if [ -e /etc/runit/runit ]; then
 # Start all deamons
-	/etc/runit/p2&
+    /etc/runit/p2&
 fi
 
 RUNSVID=$!
@@ -54,10 +58,11 @@ for _srv in $(ls -1 /etc/service); do
     sv status ${_srv}
 done
 
+[ -r /etc/envvars ] && . /etc/envvars
 if [ ${_cmdargn} -gt 0 ]; then
-	sleep 3
-	echo "Executing command line: ${_cmdargs}"
-	exec ${_cmdargs}
+    sleep 3
+    echo "Executing command line: ${_cmdargs}"
+    exec ${_cmdargs}
 fi
 
 # Catch shutdown signals
@@ -66,4 +71,4 @@ trap shutdown SIGTERM SIGINT SIGHUP
 wait ${RUNSVID}
 
 shutdown
-unset _cmdargn _cmdargs _srv 
+unset _cmdargn _cmdargs _srv

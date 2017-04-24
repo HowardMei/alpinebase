@@ -1,8 +1,8 @@
 #!/bin/sh
 
-. /etc/envvars
+[ -r /etc/envvars ] && . /etc/envvars
 
 if [ -x $(which crond) ]; then
-	exec 2>&1
-	exec crond -f
+    exec 2>&1
+    exec crond -f
 fi

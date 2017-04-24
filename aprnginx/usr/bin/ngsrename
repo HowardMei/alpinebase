@@ -1,0 +1,32 @@
+#!/bin/sh
+
+set -e
+
+if [ $# -lt 2 ]; then
+    echo >&2 "apsrename requires at least 2 arguments: srcdomain dstdomain"
+    echo >&2 "Example of example.com -> www.example.com: ngsrename $_SSL_CERT example.com www.example.com"
+    echo >&2 "Example of www.example.com -> example.com: ngsrename $_SSL_CERT www.example.com example.com"
+    exit 1
+fi
+
+_sslcert_="$1"
+_srcdomain_="$2"
+_dstdomain_="$3"
+
+
+if [ -r "/etc/ssl/${_dstdomain_}/${_sslcert_}.crt" ]; then
+    [ ! -r /etc/nginx/sites-enabled/"ssl${_srcdomain_}.rhost" ] && cp /etc/nginx/sites-available/sslrename.vhost /etc/nginx/sites-enabled/"ssl${_srcdomain_}.rhost"
+    sed -i s"/_DOMAIN_NAME_/${_srcdomain_}/" /etc/nginx/sites-enabled/"ssl${_srcdomain_}.rhost"
+    sed -i s"/_SERVER_NAME_/${_dstdomain_}/" /etc/nginx/sites-enabled/"ssl${_srcdomain_}.rhost"
+    echo "http://${_srcdomain_} and https://${_srcdomain_} will be redirected to https://${_dstdomain_}"
+else
+    [ ! -r /etc/nginx/sites-enabled/"${_srcdomain_}.rhost" ] && cp /etc/nginx/sites-available/rename.vhost /etc/nginx/sites-enabled/"${_srcdomain_}.rhost"
+    sed -i s"/_DOMAIN_NAME_/${_srcdomain_}/" /etc/nginx/sites-enabled/"${_srcdomain_}.rhost"
+    sed -i s"/_SERVER_NAME_/${_dstdomain_}/" /etc/nginx/sites-enabled/"${_srcdomain_}.rhost"
+    echo "http://${_srcdomain_} will be redirected to http://${_dstdomain_}"
+fi
+
+    echo "Usage for www.example.com -> example.com: apsrename 2 example.com www.example.com"
+
+
+unset _sslcert_ _srcdomain_ _dstdomain_

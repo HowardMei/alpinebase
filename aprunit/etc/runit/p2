@@ -1,10 +1,23 @@
 #!/bin/sh
 set -e
-
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
+# Reset PATH to avoid messed up duplication
+PATH=/command:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin
+export PATH
 echo "Start the following services under runit supervisor ... ..."
 echo "$(ls -l /etc/service)"
 
+# Close STDOUT file descriptor
+exec 1<&-
+# Close STDERR FD
+exec 2<&-
+
+# Open STDOUT as a file for read and write.
+exec 1<>/var/log/runsvdir_startup.errorlog
+
+# Redirect STDERR to STDOUT
+exec 2>&1
+
+[ -r /etc/envvars ] && . /etc/envvars
+
 exec env - PATH=${PATH} \
-runsvdir -P /etc/service 'Log: .............................................................................................................................'
+runsvdir -P /etc/service 'log: ...........................................................................................................................................................................................................................................................................................................................................................................................................'

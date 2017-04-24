@@ -1,5 +1,0 @@
-#!/bin/sh
-
-exec nginx -c /etc/nginx/nginx.conf -g 'daemon off;';
-
-echo '... ... Service nginx Started Successfully ... ...'

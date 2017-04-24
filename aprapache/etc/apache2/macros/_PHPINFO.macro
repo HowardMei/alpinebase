@@ -1,0 +1,25 @@
+# Define vhost macros for reuse, the <Macro> is evaluated only at start up, and <If> are evaluated for each incoming request.
+# Ref: https://httpd.apache.org/docs/2.4/upgrading.html && https://httpd.apache.org/docs/2.4/sections.html
+# Usage:
+#   <VirtualHost 192.168.0.1:80>
+#       Use PURE_VHOST / "/var/www/localhost/htdocs" localhost localhost
+#       ...
+#       Use _SERVSTATUS "/_svstatus"
+#       UndefMacro PURE_VHOST _SERVSTATUS
+#   </VirtualHost>
+
+<Macro _PHPINFO>
+# Usage: Use _PHPINFO
+# Example: Use _PHPINFO
+   <Location "/phpinfo.php">
+        # IPv4 loopback address
+        Require ip 127.0.0.1
+        # IPv6 loopback address
+        Require ip ::1
+        # 172.17.*.* is the subnet of docker containers
+        Require ip 172.17
+        #Require local
+   </Location>
+</Macro>
+
+
