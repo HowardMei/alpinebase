@@ -10,12 +10,12 @@ exec 1<&-
 exec 2<&-
 
 # Open STDOUT as a file for read and write.
-exec 1<>/var/log/run_nginx.errorlog
+exec 1<>/var/log/runsvdir/nginx.log
 
 # Redirect STDERR to STDOUT
 exec 2>&1
 
-echo "Startup log of the command line: exec httpd -D FOREGROUND -f /etc/apache2/httpd.conf -k start"
+echo "Startup log of the command line: exec nginx -c /etc/nginx/nginx.conf -g 'daemon off;'"
 echo "............................................................................................."
 
 [ -r /etc/envvars ] && . /etc/envvars

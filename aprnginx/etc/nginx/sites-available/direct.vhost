@@ -14,7 +14,7 @@ server {
   include       /etc/nginx/conf.d/static.conf;
 
 # Specify the document root
-  root          /var/www/_SERVER_NAME_/htdocs;
+  root          /var/www/_SERVER_NAME_/_DOC_RPATH_;
   index         index.html;
 
  # # Custom Loggings
@@ -34,12 +34,5 @@ server {
   location ~ ^.+\.php(?:/.*)?$
     {
         return 405;
-    }
-
-  location /_svstatus {
-        stub_status on;
-        # 172.17.0.0/16 is for docker containers internal subnet
-        allow   127.0.0.1 172.17.0.0/16;
-        deny    all;
     }
 }

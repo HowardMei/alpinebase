@@ -1,11 +1,15 @@
 #!/usr/bin/env /bin/sh
 
 set -e
+
+[ -r /etc/envvars ] && . /etc/envvars
 fn=$(basename $0)
 #echo "\$_:$_   \$0:$0   \$-:$-   \$@:$@"
-echo "$fn:Enabling go-dnsmasq service, by symlinking /etc/services.d/00-go-dnsmasq to /etc/service"
-    ln -s /etc/services.d/01-go-dnsmasq /etc/service/
-
+servicename="01-go-dnsmasq"
+#####################################################################################################
+echo "$fn:Enabling go-dnsmasq service, by symlinking /etc/services.d/${servicename} to /etc/service"
+ln -s /etc/services.d/${servicename} /etc/service/
+#####################################################################################################
 CONTAINER_HOST=$(cat /etc/hostname)
 if [ -z "${CONTAINER_HOST}" ]; then
     echo "Failed to get hostname, aborting" >&2
@@ -26,4 +30,4 @@ export CONTAINER_IP
 
 export > /etc/envvars
 
-unset fn
+unset fn servicename

@@ -1,10 +1,18 @@
 #!/bin/sh
-
+## This is the runit manager scripts overlay. It requires runit package being installed.
 set -e
 _cmdargn=$#
 _cmdargs=${@}
 
+# Save original environment variables before executing init scripts
+export > /etc/origenvvars
+
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Sanitize $_NAMEDVAR to strip off quotes to avoid silent failed to listen errors in apache, nginx etc.
+for ev in $(env | cut -d= -f1 | grep "^_.*"); do
+    export ${ev}=$(unquote $(eval "echo \$${ev}"))
+done
+export > /etc/envvars
 
 if [ -z ${SCRIPT_FAILMODE} ]; then
     # 0: Ignore the failures, 1: Exit on any failure
@@ -12,63 +20,78 @@ if [ -z ${SCRIPT_FAILMODE} ]; then
 fi
 
 
-shutdown() {
+_shutdown() {
   # Running post-daemon clearing tasks
   /etc/runit/p3
-
-  # first shutdown any service started by runit
-  for _srv in $(ls -1 /etc/service); do
-    sv force-stop ${_srv}
-  done
-
+  echo "Killing all runit supervisor processes ... ..."
+  sv exit /etc/service/*
+  echo "Killing runit PID1 and Shutting Down Container $(hostname)"
   # shutdown runsvdir command
-  kill -HUP $RUNSVDIR
+  kill -HUP $RUNSVDIR 2>/dev/null
   wait $RUNSVDIR
-
   # give processes time to stop
-  sleep 0.5
-
+  sleep 0.2
   # kill any other processes still running in the container
-
   for _pid  in $(ps -eo pid | grep -v PID  | tr -d ' ' | grep -v '^1$' | head -n -6); do
-    timeout -t 5 /bin/sh -c "kill $_pid && wait $_pid || kill -9 $_pid"
+      [ -n $_pid ] && timeout -t 2 /bin/sh -c "kill $_pid 2>/dev/null && wait $_pid || kill -9 $_pid 2>/dev/null" 2>/dev/null
   done
-  echo "Shutting Down Container $(hostname)"
+  echo >&2 "Container is successfully shut down!"
   exit 0
 }
 
-\rm -f /etc/runit/stopall 2>/dev/null
-# Save all environment variables before executing preinit.d scripts
-export > /etc/envvars
-# Run pre-deamon tasks
+\rm -f /etc/runit/stopall
+
+# Run pre-daemon tasks
 /etc/runit/p1
 
 [ -r /etc/envvars ] && . /etc/envvars
-if [ -e /etc/runit/runit ]; then
-# Start all deamons
+if [ -e /etc/runit/runit ] && [ ! -e /etc/runit/stopall ]; then
+echo "Start the following services under runit supervisor ... ..."
+echo "------------------------------------------------------------------"
+echo "$(lr /etc/service)"
+echo "------------------------------------------------------------------"
+# Start all daemons
     /etc/runit/p2&
 fi
-
 RUNSVID=$!
 echo "Started runit supervisor, whose PID is ${RUNSVID}."
-echo "Waiting for services processes to stablize ... ..."
-sleep 5
-echo 'List all supervised services status ... ...'
+# Sleep Interval is NSTEP=0.2 seconds per step/dot
+NSTEP=0.2
+NSV=$(ls -1 /etc/service | wc -l)
+if isdigit ${_RUNSVWAITSEC} 2>/dev/null && [ ${_RUNSVWAITSEC} -ge 2 ]; then
+    echo "Waiting ${_RUNSVWAITSEC} seconds for services processes to stablize ... ..."
+    NTOT=$(ecalc ${_RUNSVWAITSEC}/${NSTEP})
+else
+# Give each service 2 seconds to start up
+    echo "Waiting $(ecalc ${NSV}*2) seconds for services processes to stablize ... ..."
+    NTOT=$(ecalc ${NSV}*2/${NSTEP})
+fi
+N=0
+while [ ${N} -le ${NTOT} ]; do
+    sleep ${NSTEP};
+    N=$(ecalc ${N}+1);
+    printf ". ";
+done
+echo ""
+echo "List all supervised services status ... ..."
+echo "=================================================================="
 for _srv in $(ls -1 /etc/service); do
     sv status ${_srv}
 done
-
+echo "=================================================================="
 [ -r /etc/envvars ] && . /etc/envvars
-if [ ${_cmdargn} -gt 0 ]; then
-    sleep 3
-    echo "Executing command line: ${_cmdargs}"
+if [ ${_cmdargn} -gt 0 ] && [ ! -e /etc/runit/stopall ]; then
+    sleep 1
+    echo ">>>Executing command line $: ${_cmdargs}"
     exec ${_cmdargs}
 fi
 
 # Catch shutdown signals
-echo "All processes are running properly, waiting for termination signal (Ctrl+C) ... ..."
-trap shutdown SIGTERM SIGINT SIGHUP
+echo "@All processes are running properly, waiting for termination signal (Ctrl+C) ... ..."
+trap _shutdown SIGTERM SIGINT SIGHUP
 wait ${RUNSVID}
 
-shutdown
-unset _cmdargn _cmdargs _srv
+_shutdown
+
+unset ev N NSTEP NTOT _cmdargn _cmdargs _pid RUNSVID RUNSVDIR
+unset -f _shutdown

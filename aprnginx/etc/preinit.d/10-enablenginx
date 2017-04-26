@@ -3,10 +3,12 @@
 set -e
 fn=$(basename $0)
 
-echo "$fn:Enabling nginx service, by symlinking /etc/services.d/nginx to /etc/service"
+echo "$fn:Enabling nginx service, by symlinking /etc/services.d/10-nginx to /etc/service"
 
+mkdir -p /var/log/runsvdir
 mkdir -p /run/nginx /run/cache/nginx /var/log/nginx
 chown www-data:www-data /run/nginx /run/cache/nginx /var/log/nginx
+ln -sf /etc/services.d/10-nginx /etc/service
 
 echo "Server Mode is ${_SERVER_MODE}"
 case "${_SERVER_MODE}" in
@@ -20,11 +22,11 @@ case "${_SERVER_MODE}" in
             _LISTEN_TO1=$(escape "${_LISTEN_TO1}")
             sed -i s"/_LISTEN_TO_/${_LISTEN_TO1}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
             sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
-            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
+            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
         else
             [ ! -r /etc/nginx/sites-enabled/${_SERVER_NAME} ] && cp /etc/nginx/sites-available/direct.vhost /etc/nginx/sites-enabled/${_SERVER_NAME}
             sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
-            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
+            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
         fi
     ;;
     fcgilb2 | FCGILB2 | lb2 | LB2)
@@ -41,17 +43,15 @@ case "${_SERVER_MODE}" in
             sed -i s"/^#ssl_certificate/ssl_certificate/" /etc/nginx/conf.d/ssl.conf
             sed -i s"/^#ssl_certificate_key/ssl_certificate_key/" /etc/nginx/conf.d/ssl.conf
             sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
-            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
+            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/"ssl${_SERVER_NAME}"
         else
             [ ! -r /etc/nginx/sites-enabled/${_SERVER_NAME} ] && cp /etc/nginx/sites-available/direct.vhost /etc/nginx/sites-enabled/${_SERVER_NAME}
             sed -i s"/_SERVER_NAME_/${_SERVER_NAME}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
-            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
+            [ -d "/var/www/${_SERVER_NAME_}/${_DOC_RPATH_}" ] && sed -i s"/_DOC_RPATH_/${_DOC_RPATH}/g" /etc/nginx/sites-enabled/${_SERVER_NAME}
         fi
     ;;
     -- | *)
     ;;
 esac
-
-ln -sf /etc/services.d/nginx /etc/service
 
 unset fn

@@ -9,7 +9,7 @@ exec 1<&-
 exec 2<&-
 
 # Open STDOUT as a file for read and write.
-exec 1<>/var/log/go-dnsmasq_startup.errorlog
+exec 1<>/var/log/runsvdir/go-dnsmasq.log
 
 # Redirect STDERR to STDOUT
 exec 2>&1

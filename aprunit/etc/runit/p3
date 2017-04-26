@@ -8,12 +8,15 @@ exec 2>&1
 LAST=0
 test -x /etc/runit/reboot && LAST=6
 
-echo 'Forcing all services in /etc/service to stop ... ...'
-sv -w196 force-stop /etc/service/*
-sv exit /etc/service/*
+echo "Forcing all services in /etc/service to stop ... ..."
+# First try to stop services by the reverse order
+for _srv in $(ls -r1 /etc/service); do
+    sv force-stop ${_srv}
+done
+# Then force stop all service if there any remains
+sv -w196 force-stop /etc/service/* 2>/dev/null
 
 echo "Running post-service clearing scripts in /etc/postclr.d"
-
 for _script in /etc/postclr.d/*; do
     if [ -x ${_script} ]; then
         echo >&2 "*** Running: ${_script}"
@@ -23,6 +26,7 @@ for _script in /etc/postclr.d/*; do
     fi
 done
 
-rm -f /etc/envvars /etc/runit/stopall
-echo 'Shutting down the container ... ...'
+\rm -f /etc/runit/stopall
 test -x /etc/init.d/rc && /etc/init.d/rc ${LAST}
+
+unset _script _srv

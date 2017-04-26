@@ -4,7 +4,7 @@ MAINTAINER      Howard Mei      <howardleomei@gmail.com>
 ENV             V=1.10.3-r0
 ENV             _SERVER_MODE="simple"
 ENV             _SERVER_NAME="localhost"
-ENV             _DOC_RPATH="htdocs"
+ENV             _DOC_RPATH="html"
 ENV             _SSL_CERT=""
 ENV             _LISTEN_TO1="127.0.0.1:9000 max_fails=3 fail_timeout=3s"
 ENV             _LISTEN_TO2="127.0.0.1:9001"
