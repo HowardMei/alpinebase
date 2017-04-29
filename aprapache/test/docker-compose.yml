@@ -1,0 +1,44 @@
+version: '2'
+services:
+  nginx:
+    image: hwdm/aprapache
+    container_name: lamp_apache
+    restart: always
+    volumes_from:
+      - volume_appsrc
+    ports:
+      - 80:80
+    environment:
+      - _LISTEN_TO1=phpfpm:9000
+      - _SERVER_MODE=fcgiport
+      - _DOC_ROOT=/var/www/localhost/htdocs
+    networks:
+      - front
+  phpfpm:
+    image: hwdm/aprphpfpm
+    container_name: lamp_php
+    restart: always
+    volumes_from:
+      - volume_appsrc
+    expose:
+      - 9000
+    environment:
+      - _EXPOSE_TO=0.0.0.0:9000
+    networks:
+      - front
+      - back
+### Application Souce Code Container #####
+  volume_appsrc:
+    image: hwdm/apbase
+    container_name: lamp_src
+    volumes:
+      - ./appsrc:/var/www/localhost/htdocs:rw
+
+volumes:
+  lamp-data:
+    driver: local
+  lamp-dbdata:
+    driver: local
+networks:
+  front:
+  back:

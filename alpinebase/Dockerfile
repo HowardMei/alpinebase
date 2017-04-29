@@ -1,7 +1,7 @@
 FROM            alpine:3.5
 MAINTAINER      Howard Mei      <howardleomei@gmail.com>
 ENV             LOCALE          en_US.UTF-8
-ENV             TZ              Asia/Singapore
+ENV             TIMEZONE        Asia/Singapore
 
 # Set Default User and Home Dir
 USER            root
@@ -20,7 +20,7 @@ ENV             LC_ALL          $LOCALE
 RUN             chmod 0755 /entrypoint && chmod 0644 /etc/apk/repositories && \
                 chmod 0755 /usr/local/bin/* /usr/local/sbin/* && \
                 apk add --update --no-cache sed tar unzip libcap su-exec dumb-init && \
-                set-timezone ${TZ} && apk-cleanup && \
+                set-timezone ${TIMEZONE} && apk-cleanup && \
                 ln -s /sbin/su-exec /usr/sbin/sux && ln -s /usr/bin/dumb-init /usr/sbin/dinit && \
                 mkdir /run/cache /run/lock /run/tmp && chmod -R 0755 /run/cache /run/lock && \
                 chmod -R 1777 /run/tmp && mkdir -p /var/www && chmod -R 0750 /var/www && \

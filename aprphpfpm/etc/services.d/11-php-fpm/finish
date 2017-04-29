@@ -1,4 +1,0 @@
-#!/bin/sh
-
-pkill -SIGTERM php-fpm7
-echo '... ... Service php-fpm[php-fpm7] Finished ... ...'

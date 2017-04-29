@@ -26,7 +26,7 @@ if [ -r "/usr/share/zoneinfo/${_newtz}" ]; then
     echo "Setting new time zone to ${_newtz} ..."
     cp /usr/share/zoneinfo/${_newtz} /etc/localtime
     echo "${_newtz}" > /etc/timezone
-    export TZ=${_newtz}
+    export TIMEZONE=${_newtz}
     echo "$(cat /etc/timezone 2>/dev/null): $(date)"
 else
     echo "Cannot find time zone info of ${_newtz}, please use the correct format like Asia/Singapore"

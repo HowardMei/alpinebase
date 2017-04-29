@@ -1,9 +1,9 @@
 FROM            hwdm/apbase:35e
 MAINTAINER      Howard Mei      <howardleomei@gmail.com>
 
-ENV             V=2.1.2-r3
-ENV             GODNSMASQ_VERSION=1.0.7
-ENV             _RUNSVWAITSEC=5
+ARG             V=2.1.2-r3
+ARG             GODNSMASQ_VERSION=1.0.7
+ENV             RUNSVWAITSEC=1
 
 ADD             https://github.com/janeczku/go-dnsmasq/releases/download/${GODNSMASQ_VERSION}/go-dnsmasq-min_linux-amd64   /bin/go-dnsmasq
 

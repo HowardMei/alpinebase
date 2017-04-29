@@ -27,8 +27,8 @@ server {
   include       /etc/nginx/conf.d/static.conf;
 
 # Specify the document root
-  root          /var/www/_SERVER_NAME_/_DOC_RPATH_;
-  index         index.html;
+  root          _DOC_ROOT_;
+  index         index.php;
 
  # # Custom Loggings
   access_log    /var/log/nginx/_SERVER_NAME_.ssl.accesslog main;
@@ -43,7 +43,7 @@ server {
 
 # Serve non-php files directly with the fallback of index.php:
     location / {
-        try_files $uri $uri/ /index.php;
+        try_files $uri $uri/ /index.php?$args;
     }
 
 # Process php requests and return 404 if the php file does not exist:
@@ -54,19 +54,8 @@ server {
         #}
         # Avoid if which is slow, use nested location instead:
         location ~ \..*/.*\.php$ {return 404;}
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-
         fastcgi_index index.php;
-        fastcgi_keep_conn on;
-        include fastcgi_params;
-        ## Mitigate https://httpoxy.org/ vulnerabilities
-        fastcgi_param HTTP_PROXY "";
-        proxy_http_version 1.1;
-        proxy_pass http://phpfpm_backend;
-        proxy_read_timeout  30;
-        health_check;
+        fastcgi_intercept_errors on;
+        fastcgi_pass phpfpm_backend;
     }
 }

@@ -5,12 +5,41 @@ fn=$(basename $0)
 
 echo "$fn:Enabling php-fpm service, by symlinking /etc/services.d/11-php-fpm to /etc/service/"
 
-mkdir -p /run/php /run/php/sessions /var/log/php
-chown www-data:www-data /run/php /run/php/sessions /var/log/php
+mkdir -p /run/php7 /run/php7/sessions /var/log/php7
+chown www-data:www-data /run/php7 /run/php7/sessions /var/log/php7
+
+if [ -n ${TIMEZONE} ]; then
+    _TIMEZONE="$(escape $(unquote ${TIMEZONE}))"
+    sed -i "s/^date.timezone.*$/date.timezone = ${_TIMEZONE}/"  /etc/php7/conf.d/zzphp.ini
+fi
 
 if [ -n ${_EXPOSE_TO} ]; then
-    _EXPOSE_TO="$(echo ${_EXPOSE_TO} | sed -e 's/[]\/$*.^|[]/\\&/g' 2>/dev/null)"
-    sed -i s"/^listen.*$/listen = ${_EXPOSE_TO}/g" /etc/php7/php-fpm.d/www.conf
+    _EXPOSE_TO="$(escape $(unquote ${_EXPOSE_TO}))"
+    sed -i "s/^listen.*$/listen = ${_EXPOSE_TO}/" /etc/php7/php-fpm.d/www.conf
+fi
+
+_PHP_MEMORY_LIMIT_MB=$(unquote ${PHP_MEMORY_LIMIT_MB})
+if isdigit ${_PHP_MEMORY_LIMIT_MB}; then
+    sed -i "s/^memory_limit.*$/memory_limit = ${_PHP_MEMORY_LIMIT_MB}M/" /etc/php7/conf.d/zzphp.ini
+fi
+
+_UPLOAD_MAX_FILE_MB=$(unquote ${UPLOAD_MAX_FILE_MB})
+if isdigit ${_UPLOAD_MAX_FILE_MB}; then
+    sed -i "s/^upload_max_filesize.*$/upload_max_filesize = ${_UPLOAD_MAX_FILE_MB}M/" /etc/php7/conf.d/zzphp.ini
+    sed -i "s/^post_max_size.*$/post_max_size = ${_UPLOAD_MAX_FILE_MB}M/" /etc/php7/conf.d/zzphp.ini
+fi
+
+_UPLOAD_MAX_FILENO=$(unquote ${UPLOAD_MAX_FILENO})
+if isdigit ${_UPLOAD_MAX_FILENO}; then
+    sed -i "s/^max_file_uploads.*$/max_file_uploads = ${_UPLOAD_MAX_FILENO}/" /etc/php7/conf.d/zzphp.ini
+fi
+
+if [ -f ${_PHP_GLOBAL_HEAD_FILE} ];then
+    sed -i "s/^auto_prepend_file.*$/auto_prepend_file = ${_PHP_GLOBAL_PREPEND_FILE}/" /etc/php7/conf.d/zzphp.ini
+fi
+
+if [ -f ${_PHP_GLOBAL_FOOT_FILE} ];then
+    sed -i "s/^auto_append_file.*$/auto_append_file = ${_PHP_GLOBAL_PREPEND_FILE}/" /etc/php7/conf.d/zzphp.ini
 fi
 
 ln -s /etc/services.d/11-php-fpm /etc/service/

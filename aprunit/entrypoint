@@ -8,11 +8,6 @@ _cmdargs=${@}
 export > /etc/origenvvars
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-# Sanitize $_NAMEDVAR to strip off quotes to avoid silent failed to listen errors in apache, nginx etc.
-for ev in $(env | cut -d= -f1 | grep "^_.*"); do
-    export ${ev}=$(unquote $(eval "echo \$${ev}"))
-done
-export > /etc/envvars
 
 if [ -z ${SCRIPT_FAILMODE} ]; then
     # 0: Ignore the failures, 1: Exit on any failure
@@ -23,9 +18,9 @@ fi
 _shutdown() {
   # Running post-daemon clearing tasks
   /etc/runit/p3
-  echo "Killing all runit supervisor processes ... ..."
+  echo >&2 "Killing all runit supervisor processes ... ..."
   sv exit /etc/service/*
-  echo "Killing runit PID1 and Shutting Down Container $(hostname)"
+  echo >&2 "Kill runit PID1 and Shut Down Container $(hostname)"
   # shutdown runsvdir command
   kill -HUP $RUNSVDIR 2>/dev/null
   wait $RUNSVDIR
@@ -54,13 +49,13 @@ echo "------------------------------------------------------------------"
     /etc/runit/p2&
 fi
 RUNSVID=$!
-echo "Started runit supervisor, whose PID is ${RUNSVID}."
+echo "Started runit supervisors script, whose PID is ${RUNSVID}."
 # Sleep Interval is NSTEP=0.2 seconds per step/dot
 NSTEP=0.2
 NSV=$(ls -1 /etc/service | wc -l)
-if isdigit ${_RUNSVWAITSEC} 2>/dev/null && [ ${_RUNSVWAITSEC} -ge 2 ]; then
-    echo "Waiting ${_RUNSVWAITSEC} seconds for services processes to stablize ... ..."
-    NTOT=$(ecalc ${_RUNSVWAITSEC}/${NSTEP})
+if isdigit ${RUNSVWAITSEC} 2>/dev/null && [ ${RUNSVWAITSEC} -ge 1 ]; then
+    echo "Waiting ${RUNSVWAITSEC} seconds for services processes to stablize ... ..."
+    NTOT=$(ecalc ${RUNSVWAITSEC}/${NSTEP})
 else
 # Give each service 2 seconds to start up
     echo "Waiting $(ecalc ${NSV}*2) seconds for services processes to stablize ... ..."
@@ -82,7 +77,7 @@ echo "=================================================================="
 [ -r /etc/envvars ] && . /etc/envvars
 if [ ${_cmdargn} -gt 0 ] && [ ! -e /etc/runit/stopall ]; then
     sleep 1
-    echo ">>>Executing command line $: ${_cmdargs}"
+    echo >&2 ">>>Executing command line $: ${_cmdargs}"
     exec ${_cmdargs}
 fi
 

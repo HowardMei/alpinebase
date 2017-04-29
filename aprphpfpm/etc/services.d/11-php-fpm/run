@@ -10,7 +10,7 @@ exec 1<&-
 exec 2<&-
 
 # Open STDOUT as a file for read and write.
-exec 1<>/var/log/phpfpm_startup.errorlog
+exec 1<>/var/log/runsvdir/phpfpm7.log
 
 # Redirect STDERR to STDOUT
 exec 2>&1
@@ -20,6 +20,6 @@ echo "..........................................................................
 
 [ -r /etc/envvars ] && . /etc/envvars
 
-sux www-data php-fpm7 --nodaemonize --pid /run/php/php-fpm.pid --php-ini /etc/php7/php.ini --fpm-config /etc/php7/php-fpm.conf
+exec php-fpm7 --nodaemonize --pid /run/php7/php-fpm.pid --php-ini /etc/php7/php.ini --fpm-config /etc/php7/php-fpm.conf
 
 echo '... ... Service php-fpm[php-fpm7] Started Successfully ... ...'

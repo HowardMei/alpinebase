@@ -14,7 +14,7 @@ server {
   include       /etc/nginx/conf.d/static.conf;
 
 # Specify the document root
-  root          /var/www/_SERVER_NAME_/_DOC_RPATH_;
+  root          _DOC_ROOT_;
   index         index.html;
 
  # # Custom Loggings

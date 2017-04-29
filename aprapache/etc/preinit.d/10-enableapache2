@@ -12,38 +12,43 @@ set -e
 # Redirect STDERR to the file /var/log/10-apache2/service.log
 #exec 2<>/var/log/10-apache2/service.errorlog
 fn=$(basename $0)
-
+mkdir -p /var/log/runsvdir
 echo "$fn:Enabling apache2 service, by symlinking /etc/services.d/10-apache2 to /etc/service"
-# Use the runit logger fifo
-#rm -rf /etc/services.d/10-apache2/log
+ln -s /etc/services.d/10-apache2 /etc/service/
+
 echo "Server Mode is ${_SERVER_MODE}"
+if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
+    [ -r /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost" ] && bktohome /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+else
+    [ -r /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost" ] && bktohome /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
+fi
 case "${_SERVER_MODE}" in
     fcgiport | FCGIPORT | port | PORT)
         sed -i s"/direct.conf$/fcgi.conf/" /etc/apache2/httpd.conf
-        if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/sslfcgiport.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use FCGIPORT_VHOST.*$/Use FCGIPORT_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
-            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}.crt" ]; then
+            cp -f /etc/apache2/sites-available/sslfcgiport.vhost /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_LISTEN_TO1}) $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use FCGIPORT_VHOST.*$/Use FCGIPORT_VHOST ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "$(unquote ${_DOMAIN}) $(unquote ${_SSL_CERT})")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
         else
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgiport.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use FCGIPORT_VHOST.*$/Use FCGIPORT_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            cp -f /etc/apache2/sites-available/fcgiport.vhost /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_LISTEN_TO1}) $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use FCGIPORT_VHOST.*$/Use FCGIPORT_VHOST ${paras}/" /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
         fi
     ;;
     fcgisock | FCGISOCK | sock | SOCK)
         sed -i s"/direct.conf$/fcgi.conf/" /etc/apache2/httpd.conf
-        if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/sslfcgisock.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use FCGISOCK_VHOST.*$/Use FCGISOCK_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
-            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+        if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}.crt" ]; then
+            cp -f /etc/apache2/sites-available/sslfcgisock.vhost /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_LISTEN_TO1}) $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use FCGISOCK_VHOST.*$/Use FCGISOCK_VHOST ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "$(unquote ${_DOMAIN}) $(unquote ${_SSL_CERT})")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
         else
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgisock.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use FCGISOCK_VHOST.*$/Use FCGISOCK_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgisock.vhost /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_LISTEN_TO1}) $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use FCGISOCK_VHOST.*$/Use FCGISOCK_VHOST ${paras}/" /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
         fi
     ;;
     fcgilb2 | FCGILB2 | lb2 | LB2)
@@ -57,15 +62,15 @@ case "${_SERVER_MODE}" in
             ;;
         esac
         if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgilib2.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_LISTEN_TO2 $_LB_METHOD $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use FCGILB2_VHOST.*$/Use FCGILB2_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
-            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            cp -f /etc/apache2/sites-available/fcgilib2.vhost /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_LISTEN_TO1}) $(unquote ${_LISTEN_TO2}) $(unquote ${_LB_METHOD}) $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use FCGILB2_VHOST.*$/Use FCGILB2_VHOST ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "$(unquote ${_DOMAIN}) $(unquote ${_SSL_CERT})")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
         else
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgilib2.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_LISTEN_TO2 $_LB_METHOD $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use FCGILB2_VHOST.*$/Use FCGILB2_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            cp -f /etc/apache2/sites-available/fcgilib2.vhost /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_LISTEN_TO1}) $(unquote ${_LISTEN_TO2}) $(unquote ${_LB_METHOD}) $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use FCGILB2_VHOST.*$/Use FCGILB2_VHOST ${paras}/" /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
         fi
     ;;
     fcgilb3 | FCGILB3 | lb3 | LB3)
@@ -79,32 +84,30 @@ case "${_SERVER_MODE}" in
             ;;
         esac
         if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgilib3.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_LISTEN_TO2 $_LISTEN_TO3 $_LB_METHOD $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use FCGILB3_VHOST.*$/Use FCGILB3_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
-            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            cp -f /etc/apache2/sites-available/fcgilib3.vhost /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_LISTEN_TO1}) $(unquote ${_LISTEN_TO2}) $(unquote ${_LISTEN_TO3}) $(unquote ${_LB_METHOD}) $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use FCGILB3_VHOST.*$/Use FCGILB3_VHOST ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "$(unquote ${_DOMAIN}) $(unquote ${_SSL_CERT})")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
         else
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/fcgilib3.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_LISTEN_TO1 $_LISTEN_TO2 $_LISTEN_TO3 $_LB_METHOD $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use FCGILB3_VHOST.*$/Use FCGILB3_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            cp -f /etc/apache2/sites-available/fcgilib3.vhost /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_LISTEN_TO1}) $(unquote ${_LISTEN_TO2}) $(unquote ${_LISTEN_TO3}) $(unquote ${_LB_METHOD}) $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use FCGILB3_VHOST.*$/Use FCGILB3_VHOST ${paras}/" /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
         fi
     ;;
     -- | *)
         if [ -r "/etc/ssl/${_SERVER_ALIAS}/${_SSL_CERT}" ]; then
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/ssldefault.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use PURE_VHOST.*$/Use PURE_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "${_DOMAIN} ${_SSL_CERT}")
-            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            cp -f /etc/apache2/sites-available/ssldefault.vhost /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use PURE_VHOST.*$/Use PURE_VHOST ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
+            paras=$(escape "$(unquote ${_DOMAIN}) $(unquote ${_SSL_CERT})")
+            sed -i s"/^Use SSL_CERT.*$/Use SSL_CERT ${paras}/" /etc/apache2/sites-enabled/"ssl${_SERVER_ALIAS}.vhost"
         else
-            [ ! -r /etc/apache2/sites-enabled/${_SERVER_ALIAS} ] && cp /etc/apache2/sites-available/default.vhost /etc/apache2/sites-enabled/${_SERVER_ALIAS}
-            paras=$(escape "$_END_POINT $_DOC_ROOT $_DOMAIN $_SERVER_ALIAS")
-            sed -i s"/^Use PURE_VHOST.*$/Use PURE_VHOST ${paras}/" /etc/apache2/sites-enabled/${_SERVER_ALIAS}
+            cp -f /etc/apache2/sites-available/default.vhost /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
+            paras=$(escape "/ $(unquote ${_DOC_ROOT}) $(unquote ${_DOMAIN}) $(unquote ${_SERVER_ALIAS})")
+            sed -i s"/^Use PURE_VHOST.*$/Use PURE_VHOST ${paras}/" /etc/apache2/sites-enabled/"${_SERVER_ALIAS}.vhost"
         fi
     ;;
 esac
-
-ln -s /etc/services.d/10-apache2 /etc/service/
 
 unset fn paras
